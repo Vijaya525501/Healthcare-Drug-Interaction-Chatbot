@@ -28,7 +28,7 @@ driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASS))
 # Load Phi-2 LLM
 model_name = "microsoft/phi-2"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto")
+model = AutoModelForCausalLM.from_pretrained(model_name)
 
 # ---------------------------------------------------------
 # Helper Functions
