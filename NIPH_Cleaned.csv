@@ -1,0 +1,6 @@
+drug_name,treated_condition,drug_link
+Hydrochlorothiazide,High Blood Pressure,https://atcddd.fhi.no/atc_ddd_index/?code=C09XA52
+Prednisone,Inflammation,https://atcddd.fhi.no/atc_ddd_index/?code=A07EA03
+Warfarin,Blood Clot,https://atcddd.fhi.no/atc_ddd_index/?code=B&showdescription=yes
+Clopidogrel,Heart Disease,https://atcddd.fhi.no/atc_ddd_index/?code=B01AC04
+Naproxen,Arthritis,https://atcddd.fhi.no/atc/structure_and_principles/structure_and_principles

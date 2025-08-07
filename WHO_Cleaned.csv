@@ -1,0 +1,6 @@
+drug_name,treated_condition,drug_link
+Gabapentin,Seizures,https://list.essentialmeds.org/recommendations/1191
+Lisinopril,High Blood Pressure,https://list.essentialmeds.org/medicines/531
+Morphine,Severe Pain,https://list.essentialmeds.org/?query=Morphine
+Fluoxetine,Depression,https://list.essentialmeds.org/?query=Fluoxetine
+Ranitidine,Ulcers,https://list.essentialmeds.org/?query=Ranitidine
