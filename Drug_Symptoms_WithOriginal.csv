@@ -1,0 +1,87 @@
+drug_name,symptom_name,original_symptom,source
+Ibuprofen,loss of consciousness,Loss of consciousness,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,convulsions,Convulsions / Seizures,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,seizures,Convulsions / Seizures,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,shortness of breath,Shortness of breath,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,respiratory depression or apnea,Respiratory depression or apnea,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,kidney failure,Kidney failure,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,abnormal liver function,Abnormal liver function,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,high potassium,High potassium,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,metabolic acidosis,Metabolic acidosis,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,coma,Coma,https://go.drugbank.com/drugs/DB01050
+Dexamethasone,swelling,swelling,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,mood changes,mood changes,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,vision problems,vision problems,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,weakness,weakness,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,stomach pain,stomach pain,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,infections,or infections,https://go.drugbank.com/drugs/DB01234
+Omeprazole,feeling confused,Feeling confused,https://go.drugbank.com/drugs/DB00338
+Omeprazole,sleepy,sleepy,https://go.drugbank.com/drugs/DB00338
+Omeprazole,blurry vision,blurry vision,https://go.drugbank.com/drugs/DB00338
+Omeprazole,racing heart,racing heart,https://go.drugbank.com/drugs/DB00338
+Omeprazole,feeling sick,feeling sick,https://go.drugbank.com/drugs/DB00338
+Omeprazole,sweating,sweating,https://go.drugbank.com/drugs/DB00338
+Omeprazole,warm skin,warm skin,https://go.drugbank.com/drugs/DB00338
+Omeprazole,headache,headache,https://go.drugbank.com/drugs/DB00338
+Omeprazole,dry mouth,dry mouth,https://go.drugbank.com/drugs/DB00338
+Levothyroxine,irregular heartbeat,Fast or irregular heartbeat,https://go.drugbank.com/drugs/DB00451
+Levothyroxine,feeling anxious,feeling anxious or jittery,https://go.drugbank.com/drugs/DB00451
+Levothyroxine,feeling jittery,feeling anxious or jittery,https://go.drugbank.com/drugs/DB00451
+Levothyroxine,trouble sleeping,trouble sleeping,https://go.drugbank.com/drugs/DB00451
+Levothyroxine,weight loss,weight loss,https://go.drugbank.com/drugs/DB00451
+Levothyroxine,feeling hot,feeling hot,https://go.drugbank.com/drugs/DB00451
+Levothyroxine,hand tremors,hand tremors,https://go.drugbank.com/drugs/DB00451
+Levothyroxine,loose stools,loose stools,https://go.drugbank.com/drugs/DB00451
+Levothyroxine,sweating a lot,sweating a lot,https://go.drugbank.com/drugs/DB00451
+Aspirin,pain,Pain,https://www.drugs.com/aspirin.html
+Aspirin,fever,Fever,https://www.drugs.com/aspirin.html
+Aspirin,inflammatory,Inflammatory,https://www.drugs.com/aspirin.html
+Metformin,tired,tired,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,weakness,weakness,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,unusual sleepiness,Unusual sleepiness,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,trouble breathing,Trouble breathing,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,stomach discomfort,Stomach discomfort,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,pain,pain,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,nausea,nausea,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,vomiting,vomiting,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,diarrhea,diarrhea,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,feeling cold,Feeling cold,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,feeling dizzy,Feeling dizzy,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,irregular heartbeat,irregular heartbeat,https://www.drugs.com/search.php?searchterm=Metformin
+Atorvastatin,fatigue,fatigue,https://www.drugs.com/search.php?searchterm=Atorvastatin
+Atorvastatin,chest pain,chest pain,https://www.drugs.com/search.php?searchterm=Atorvastatin
+Atorvastatin,shortness of breath,shortness of breath or risk factors for heart disease,https://www.drugs.com/search.php?searchterm=Atorvastatin
+Amoxicillin,fever,fever,https://www.drugs.com/search.php?searchterm=Amoxicillin
+Amoxicillin,sore throat,sore throat,https://www.drugs.com/search.php?searchterm=Amoxicillin
+Amoxicillin,cough,cough,https://www.drugs.com/search.php?searchterm=Amoxicillin
+Amoxicillin,ear pain,ear pain,https://www.drugs.com/search.php?searchterm=Amoxicillin
+Amoxicillin,nasal congestion,nasal congestion,https://www.drugs.com/search.php?searchterm=Amoxicillin
+Amoxicillin,chest discomfort,chest discomfort,https://www.drugs.com/search.php?searchterm=Amoxicillin
+Amoxicillin,urinary symptoms,urinary symptoms,https://www.drugs.com/search.php?searchterm=Amoxicillin
+Amoxicillin,skin redness,skin redness,https://www.drugs.com/search.php?searchterm=Amoxicillin
+Paracetamol,headaches,headaches,https://www.drugs.com/search.php?searchterm=Paracetamol
+Paracetamol,muscle aches,muscle aches,https://www.drugs.com/search.php?searchterm=Paracetamol
+Paracetamol,toothache,toothache,https://www.drugs.com/search.php?searchterm=Paracetamol
+Paracetamol,menstrual cramps,menstrual cramps,https://www.drugs.com/search.php?searchterm=Paracetamol
+Paracetamol,backache,backache and fever,https://www.drugs.com/search.php?searchterm=Paracetamol
+Paracetamol,fever,backache and fever,https://www.drugs.com/search.php?searchterm=Paracetamol
+Losartan,headache,oftern none sometimes may include headache,https://www.mayoclinic.org/drugs-supplements/losartan-oral-route/description/drg-20067341
+Losartan,dizziness,dizziness,https://www.mayoclinic.org/drugs-supplements/losartan-oral-route/description/drg-20067341
+Losartan,fatigue,fatigue if BP is high,https://www.mayoclinic.org/drugs-supplements/losartan-oral-route/description/drg-20067341
+Simvastatin,chest pain,sometimes chest pain,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,fatigue,fatigue,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,xanthomas, xanthomas (rare),https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Azithromycin,fever,Fever,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,chills,chills,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,fatigue,fatigue,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,pain at infection site,localized pain or inflammation depending on the infection site,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,inflammation at infection site,localized pain or inflammation depending on the infection site,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Insulin,high blood sugar,High blood sugar: thirst,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,thirst,High blood sugar: thirst,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,frequent urination,frequent urination,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,fatigue,fatigue,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,low blood sugar,Low blood sugar: shakiness,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,shakiness,Low blood sugar: shakiness,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,sweating,sweating,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,confusion,confusion,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Codeine,pain,Pain,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
