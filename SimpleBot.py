@@ -19,16 +19,24 @@ for resource in ['stopwords', 'punkt', 'punkt_tab']:
 #  MediBot - Cleaned & Deduplicated Drug Interaction Checker
 # =========================================================
 
-NEO4J_URI = "bolt://localhost:7687"
+#
+
+#NEO4J_URI = "bolt://localhost:7687"
+#NEO4J_USER = "neo4j"
+#NEO4J_PASS = "Vijayalaxmi@18"
+#DB_NAME = "chat"
+
+NEO4J_URI = "neo4j+s://5acfeed9.databases.neo4j.io"
 NEO4J_USER = "neo4j"
 NEO4J_PASS = "Vijayalaxmi@18"
-DB_NAME = "chat"
+DB_NAME = "neo4j"
+
 driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASS))
 
 # Load Phi-2 LLM
 model_name = "microsoft/phi-2"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto")
 
 # ---------------------------------------------------------
 # Helper Functions
