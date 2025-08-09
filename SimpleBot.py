@@ -28,7 +28,7 @@ for resource in ['stopwords', 'punkt', 'punkt_tab']:
 
 NEO4J_URI = "neo4j+s://5acfeed9.databases.neo4j.io"
 NEO4J_USER = "neo4j"
-NEO4J_PASS = "Vijayalaxmi@18"
+NEO4J_PASS = "KnNt42Z-f5uWvfRLRLByYKq758nubecZNkYafbaCf1I"
 DB_NAME = "neo4j"
 
 driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASS))
