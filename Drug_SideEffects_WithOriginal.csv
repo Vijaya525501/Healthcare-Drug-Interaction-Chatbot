@@ -1,0 +1,280 @@
+drug_name,sideeffect_name,original_sideeffect,source
+Ibuprofen,abdominal pain,abdominal pain,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,nausea,nausea,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,vomiting,vomiting,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,lethargy,lethargy,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,vertigo,vertigo,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,drowsiness,drowsiness (somnolence),https://go.drugbank.com/drugs/DB01050
+Ibuprofen,dizziness,dizziness and insomnia. Other symptoms of overdose include headache,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,insomnia,dizziness and insomnia. Other symptoms of overdose include headache,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,headache,dizziness and insomnia. Other symptoms of overdose include headache,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,loss of consciousness,loss of consciousness,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,tinnitus,tinnitus,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,cns depression,CNS depression,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,convulsions,convulsions and seizures. May rarely cause metabolic acidosis,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,seizures,convulsions and seizures. May rarely cause metabolic acidosis,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,metabolic acidosis,convulsions and seizures. May rarely cause metabolic acidosis,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,abnormal hepatic,abnormal hepatic function,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,hyperkalemia,hyperkalemia,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,renal failure,renal failure,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,dyspnea,dyspnea,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,respiratory depression,respiratory depression,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,coma,coma,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,acute renal failure,acute renal failure,https://go.drugbank.com/drugs/DB01050
+Ibuprofen,apnea,and apnea (primarily in very young pediatric patients).,https://go.drugbank.com/drugs/DB01050
+Dexamethasone,cataract,cataract,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,glaucoma,glaucoma,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,hypertension,hypertension,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,water retention,water retention,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,hyperlipidemia,hyperlipidemia,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,peptic ulcer,peptic ulcer,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,pancreatitis,pancreatitis,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,myopathy,myopathy,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,osteoporosis,osteoporosis,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,mood changes,mood changes,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,psychosis,psychosis,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,dermal atrophy,dermal atrophy,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,allergy,allergy,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,acne,acne,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,hypertrichosis,hypertrichosis,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,immune suppression,immune suppression,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,infection,decreased resistance to infection,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,moon face,moon face,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,hyperglycemia,hyperglycemia,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,hypocalcemia,hypocalcemia,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,hypophosphatemia,hypophosphatemia,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,metabolic acidosis,metabolic acidosis,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,growth suppression,growth suppression,https://go.drugbank.com/drugs/DB01234
+Dexamethasone,secondary adrenal insufficiency,and secondary adrenal insufficiency. Overdose may be treated by adjusting the dose or stopping the corticosteroid as well as initiating symptomatic and supportive treatment.,https://go.drugbank.com/drugs/DB01234
+Omeprazole,confusion,confusion,https://go.drugbank.com/drugs/DB00338
+Omeprazole,drowsiness,drowsiness,https://go.drugbank.com/drugs/DB00338
+Omeprazole,blurred vision,blurred vision,https://go.drugbank.com/drugs/DB00338
+Omeprazole,tachycardia,tachycardia,https://go.drugbank.com/drugs/DB00338
+Omeprazole,nausea,nausea,https://go.drugbank.com/drugs/DB00338
+Omeprazole,diaphoresis,diaphoresis,https://go.drugbank.com/drugs/DB00338
+Omeprazole,flushing,flushing,https://go.drugbank.com/drugs/DB00338
+Omeprazole,headache,headache,https://go.drugbank.com/drugs/DB00338
+Omeprazole,dry mouth,and dry mouth.,https://go.drugbank.com/drugs/DB00338
+Levothyroxine,weight loss,weight loss,https://go.drugbank.com/drugs/DB00451
+Levothyroxine,increased appetite,increased appetite,https://go.drugbank.com/drugs/DB00451
+Levothyroxine,palpitations,palpitations,https://go.drugbank.com/drugs/DB00451
+Levothyroxine,nervousness,nervousness,https://go.drugbank.com/drugs/DB00451
+Levothyroxine,diarrhea,diarrhea,https://go.drugbank.com/drugs/DB00451
+Levothyroxine,abdominal cramps,abdominal cramps,https://go.drugbank.com/drugs/DB00451
+Levothyroxine,sweating,sweating,https://go.drugbank.com/drugs/DB00451
+Levothyroxine,tachycardia,tachycardia,https://go.drugbank.com/drugs/DB00451
+Levothyroxine,increased pulse,increased pulse and blood pressure,https://go.drugbank.com/drugs/DB00451
+Levothyroxine,increased blood pressure,increased pulse and blood pressure,https://go.drugbank.com/drugs/DB00451
+Levothyroxine,cardiac arrhythmias,cardiac arrhythmias,https://go.drugbank.com/drugs/DB00451
+Levothyroxine,tremors,tremors,https://go.drugbank.com/drugs/DB00451
+Levothyroxine,insomnia,insomnia,https://go.drugbank.com/drugs/DB00451
+Levothyroxine,heat intolerance,heat intolerance,https://go.drugbank.com/drugs/DB00451
+Levothyroxine,fever,fever,https://go.drugbank.com/drugs/DB00451
+Levothyroxine,menstrual irregularities.,and menstrual irregularities.,https://go.drugbank.com/drugs/DB00451
+Aspirin,allergy,allergic reaction,https://www.drugs.com/aspirin.html
+Aspirin,hives,hives,https://www.drugs.com/aspirin.html
+Aspirin,difficult breathing,difficult breathing,https://www.drugs.com/aspirin.html
+Aspirin,swelling  face,swelling of your face,https://www.drugs.com/aspirin.html
+Aspirin,lips,lips,https://www.drugs.com/aspirin.html
+Aspirin,tongue,tongue,https://www.drugs.com/aspirin.html
+Aspirin,throat,or throat,https://www.drugs.com/aspirin.html
+Metformin,abdominal,abdominal or stomach discomfort,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin, stomach discomfort,abdominal or stomach discomfort,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,cough,cough or hoarseness,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,hoarseness,cough or hoarseness,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,decreased appetite,decreased appetite,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,diarrhea,diarrhea,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,irrigular breathing,fast or shallow breathing,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,fever,fever or chills,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,chills,fever or chills,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,general feeling of discomfort,general feeling of discomfort,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,lower back pain,lower back or side pain,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,side pain,lower back or side pain,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,muscle pain,muscle pain or cramping,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,cramping,muscle pain or cramping,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,painful  urination,painful or difficult urination,https://www.drugs.com/search.php?searchterm=Metformin
+Metformin,sleepiness,sleepiness,https://www.drugs.com/search.php?searchterm=Metformin
+Atorvastatin,bones pain,pain in your bones,https://www.drugs.com/search.php?searchterm=Atorvastatin
+Atorvastatin,spine,pain in your spine,https://www.drugs.com/search.php?searchterm=Atorvastatin
+Atorvastatin,joints,pain in your joints,https://www.drugs.com/search.php?searchterm=Atorvastatin
+Atorvastatin,muscles,pain in your muscles,https://www.drugs.com/search.php?searchterm=Atorvastatin
+Atorvastatin,painful  urination,pain and burning when you urinate,https://www.drugs.com/search.php?searchterm=Atorvastatin
+Atorvastatin,muscle spasms,muscle spasms,https://www.drugs.com/search.php?searchterm=Atorvastatin
+Atorvastatin, stomach discomfort,upset stomach,https://www.drugs.com/search.php?searchterm=Atorvastatin
+Atorvastatin,trouble sleeping,trouble sleeping,https://www.drugs.com/search.php?searchterm=Atorvastatin
+Atorvastatin,stuffy nose,stuffy nose,https://www.drugs.com/search.php?searchterm=Atorvastatin
+Atorvastatin,runny nose,runny nose,https://www.drugs.com/search.php?searchterm=Atorvastatin
+Atorvastatin,sore throat,sore throat,https://www.drugs.com/search.php?searchterm=Atorvastatin
+Atorvastatin,diarrhea,diarrhea,https://www.drugs.com/search.php?searchterm=Atorvastatin
+Atorvastatin,nausea,nausea,https://www.drugs.com/search.php?searchterm=Atorvastatin
+Atorvastatin,pain , pain in your arms or legs.,https://www.drugs.com/search.php?searchterm=Atorvastatin
+Amoxicillin,allergy,allergic reaction,https://www.drugs.com/search.php?searchterm=Amoxicillin
+Amoxicillin,hives,hives,https://www.drugs.com/search.php?searchterm=Amoxicillin
+Amoxicillin,difficult breathing,difficult breathing,https://www.drugs.com/search.php?searchterm=Amoxicillin
+Amoxicillin,swelling in face,swelling in face or throat,https://www.drugs.com/search.php?searchterm=Amoxicillin
+Amoxicillin,swelling in throat,swelling in face or throat,https://www.drugs.com/search.php?searchterm=Amoxicillin
+Amoxicillin,fever,fever,https://www.drugs.com/search.php?searchterm=Amoxicillin
+Amoxicillin,sore throat,sore throat,https://www.drugs.com/search.php?searchterm=Amoxicillin
+Amoxicillin,burning eyes,burning eyes,https://www.drugs.com/search.php?searchterm=Amoxicillin
+Amoxicillin,skin pain,skin pain,https://www.drugs.com/search.php?searchterm=Amoxicillin
+Amoxicillin,skin rash,red or purple skin rash with blistering and peeling).,https://www.drugs.com/search.php?searchterm=Amoxicillin
+Losartan,pain,Body aches or pain,https://www.mayoclinic.org/drugs-supplements/losartan-oral-route/description/drg-20067341
+Losartan,chills,chills,https://www.mayoclinic.org/drugs-supplements/losartan-oral-route/description/drg-20067341
+Losartan,cough,cough,https://www.mayoclinic.org/drugs-supplements/losartan-oral-route/description/drg-20067341
+Losartan,ear congestion,ear congestion,https://www.mayoclinic.org/drugs-supplements/losartan-oral-route/description/drg-20067341
+Losartan,fever,fever,https://www.mayoclinic.org/drugs-supplements/losartan-oral-route/description/drg-20067341
+Losartan,headache,headache,https://www.mayoclinic.org/drugs-supplements/losartan-oral-route/description/drg-20067341
+Losartan,loss of voice,loss of voice,https://www.mayoclinic.org/drugs-supplements/losartan-oral-route/description/drg-20067341
+Losartan,sneezing,sneezing,https://www.mayoclinic.org/drugs-supplements/losartan-oral-route/description/drg-20067341
+Losartan,sore throat,sore throat,https://www.mayoclinic.org/drugs-supplements/losartan-oral-route/description/drg-20067341
+Losartan,stuffy nose,stuffy or runny nose,https://www.mayoclinic.org/drugs-supplements/losartan-oral-route/description/drg-20067341
+Losartan,runny nose,stuffy or runny nose,https://www.mayoclinic.org/drugs-supplements/losartan-oral-route/description/drg-20067341
+Losartan,trouble breathing,trouble breathing,https://www.mayoclinic.org/drugs-supplements/losartan-oral-route/description/drg-20067341
+Losartan,weakness,unusual tiredness or weakness,https://www.mayoclinic.org/drugs-supplements/losartan-oral-route/description/drg-20067341
+Losartan,tiredness,unusual tiredness or weakness,https://www.mayoclinic.org/drugs-supplements/losartan-oral-route/description/drg-20067341
+Simvastatin,abdominal pain,Serious (Incidence not known): Severe abdominal pain,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,black stools,black/tarry stools,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,dark urine,dark urine,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,dizziness,dizziness,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,fever,fever,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,headache,headache,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,pale stools,pale stools,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,loss of appetite,loss of appetite,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,muscle pain,muscle pain/cramps/stiffness/weakness,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,cramps,muscle pain/cramps/stiffness/weakness,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,stiffness,muscle pain/cramps/stiffness/weakness,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,weakness,muscle pain/cramps/stiffness/weakness,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,muscular tenderness,muscular tenderness/wasting,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,vomiting,nausea/vomiting,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,nausea,nausea/vomiting,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,rash,rash,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,unpleasant breath odor,unpleasant breath odor,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,unusual tiredness,unusual tiredness/weakness,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,weakness,unusual tiredness/weakness,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,vomiting blood,vomiting blood,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,yellow eyes,yellow eyes/skin (liver damage or rhabdomyolysis),https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,yellow skin,yellow eyes/skin (liver damage or rhabdomyolysis),https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,redness of face,More common: Flushing (warmth/redness of face,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,neck,More common: Flushing (warmth/redness of neck,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,arms,More common: Flushing (warmth/redness of arms,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,chest,More common: Flushing (warmth/redness of chest,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,back pain,Less common: Back pain,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,diarrhea,diarrhea,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,itchy skin,itchy skin,https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Azithromycin,pain,More common: Pain,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,redness,redness,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,swelling at injection site,swelling at injection site,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,difficulty breathing,Less common: Difficulty breathing,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,loose stools,loose stools,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,chest tightness,chest tightness,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,abdominal cramps,Rare: Severe abdominal cramps,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,watery diarrhea,watery/bloody diarrhea,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,bloody diarrhea,watery/bloody diarrhea,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,fever,fever,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,joint pain,joint pain,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,swelling of face,swelling of face/mouth/hands/feet,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,swelling  mouth,swelling of face/mouth/hands/feet,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,swelling hands,swelling of face/mouth/hands/feet,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,swelling feet,swelling of face/mouth/hands/feet,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,rash,severe rash,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,black stools,Incidence not known: Black/tarry stools,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,bleeding gums,bleeding gums,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,blistering skin,blistering skin,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,chest pain,chest pain,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,fainting,fainting,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,irregular heartbeat,irregular heartbeat,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,yellow eyes,yellow eyes/skin (liver damage),https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,yellow skin,yellow eyes/skin (liver damage),https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,nausea,nausea,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,vomiting,vomiting,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,muscle pain,muscle pain,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,dizziness,dizziness,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,tiredness,unusual tiredness,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,swelling of legs,swelling of legs,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,sores in mouth,sores in mouth,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Azithromycin,hearing loss,hearing loss,https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Insulin,anxiety,More common: Anxiety,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,blurred vision,blurred vision,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,chills,chills,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,cold sweats,cold sweats,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,confusion,confusion,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,dizziness,dizziness,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,fast heartbeat,fast heartbeat,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,headache,headache,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,hunger,hunger,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,nausea,nausea,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,nightmares,nightmares,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,seizures,seizures,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,shakiness,shakiness,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,slurred speech,slurred speech,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,unusual tiredness,unusual tiredness,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,swelling of face,Less common: Swelling of face/arms/hands/legs/feet,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,swelling of arms,Less common: Swelling of face/arms/hands/legs/feet,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,swelling of hands,Less common: Swelling of face/arms/hands/legs/feet,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,swelling of legs,Less common: Swelling of face/arms/hands/legs/feet,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,swelling of feet,Less common: Swelling of face/arms/hands/legs/feet,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,weight gain,rapid weight gain,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,tingling in hands,tingling in hands/feet,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,tingling in feet,tingling in hands/feet,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,fainting,Incidence not known: Fainting,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,hives,hives,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,irregular heartbeat,irregular heartbeat,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,loss of appetite,loss of appetite,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,muscle cramps,muscle cramps,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,swelling eyes,swelling around eyes/face/lips/tongue,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,swelling face,swelling around eyes/face/lips/tongue,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,swelling lips,swelling around eyes/face/lips/tongue,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,swelling tongue,swelling around eyes/face/lips/tongue,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,vomiting,vomiting,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,redness,Redness,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,pain,pain,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,itching,itching,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Insulin,swelling at injection site,or swelling at injection site,https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Codeine,drowsiness,More common: Drowsiness,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,relaxed,relaxed/calm feeling,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,agitation,Incidence not known (serious): Agitation,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,bloating,bloating,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,blurred vision,blurred vision,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,chills,chills,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,clammy skin,cold clammy skin,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,confusion,confusion,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,constipation,constipation,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,cough,cough,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,dark urine,dark urine,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,diarrhea,diarrhea,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,difficulty swallowing,difficulty breathing/swallowing,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,difficulty breathing,difficulty breathing/swallowing,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,dizziness,dizziness,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,fainting,fainting,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,irregular heartbeat,irregular or slow heartbeat,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,fever,fever,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,hives,hives/itching/rash,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,itching,hives/itching/rash,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,rash,hives/itching/rash,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,loss of appetite,loss of appetite,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,nausea,nausea/vomiting,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,vomiting,nausea/vomiting,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,pale or blue lips,pale or blue lips/fingernails/skin,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,pale or blue fingernails,pale or blue lips/fingernails/skin,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,pale or blue skin,pale or blue lips/fingernails/skin,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,puffiness,puffiness/swelling of face/lips/tongue/eyelids,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,swelling of face,puffiness/swelling of face/lips/tongue/eyelids,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,swelling of lips,puffiness/swelling of face/lips/tongue/eyelids,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,swelling of tongue,puffiness/swelling of face/lips/tongue/eyelids,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,swelling of eyelids,puffiness/swelling of face/lips/tongue/eyelids,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,shivering,shivering,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,sweating,sweating,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,tremors,tremors,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,unconsciousness,unconsciousness,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,tiredness,unusual tiredness or weakness,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,weakness,unusual tiredness or weakness,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,yellow eyes,yellow eyes/skin,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,yellow skin,yellow eyes/skin,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,sleepiness,Overdose symptoms: Extreme sleepiness,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,pinpoint pupils,pinpoint pupils,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,irregular breathing,slow/irregular breathing,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,blue lips,blue lips/skin,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,chest pain,chest pain,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,cold,cold/clammy skin,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,clammy skin,cold/clammy skin,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
+Codeine,coughing,coughing with pink frothy sputum,https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
