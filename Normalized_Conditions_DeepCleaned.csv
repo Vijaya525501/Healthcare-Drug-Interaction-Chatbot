@@ -1,0 +1,70 @@
+drug_name,normalized_condition,original_condition,source
+Amoxicillin,tonsillitis,"bacterial infections such as tonsillitis, bronchitis, sinusitis, pneumonia, and infections of the ear, nose, throat, skin, or urinary tract.",Drugs.com
+Amoxicillin,bronchitis,"bacterial infections such as tonsillitis, bronchitis, sinusitis, pneumonia, and infections of the ear, nose, throat, skin, or urinary tract.",Drugs.com
+Amoxicillin,sinusitis,"bacterial infections such as tonsillitis, bronchitis, sinusitis, pneumonia, and infections of the ear, nose, throat, skin, or urinary tract.",Drugs.com
+Amoxicillin,pneumonia,"bacterial infections such as tonsillitis, bronchitis, sinusitis, pneumonia, and infections of the ear, nose, throat, skin, or urinary tract.",Drugs.com
+Amoxicillin,infections,"bacterial infections such as tonsillitis, bronchitis, sinusitis, pneumonia, and infections of the ear, nose, throat, skin, or urinary tract.",Drugs.com
+Amoxicillin,nose,"bacterial infections such as tonsillitis, bronchitis, sinusitis, pneumonia, and infections of the ear, nose, throat, skin, or urinary tract.",Drugs.com
+Amoxicillin,throat,"bacterial infections such as tonsillitis, bronchitis, sinusitis, pneumonia, and infections of the ear, nose, throat, skin, or urinary tract.",Drugs.com
+Amoxicillin,skin,"bacterial infections such as tonsillitis, bronchitis, sinusitis, pneumonia, and infections of the ear, nose, throat, skin, or urinary tract.",Drugs.com
+Amoxicillin,urinary tract,"bacterial infections such as tonsillitis, bronchitis, sinusitis, pneumonia, and infections of the ear, nose, throat, skin, or urinary tract.",Drugs.com
+Aspirin,pain,"Pain, Fever, Inflammatory, heart attacks, chest pain, stroke",Drugs.com
+Aspirin,fever,"Pain, Fever, Inflammatory, heart attacks, chest pain, stroke",Drugs.com
+Aspirin,inflammatory,"Pain, Fever, Inflammatory, heart attacks, chest pain, stroke",Drugs.com
+Aspirin,heart attacks,"Pain, Fever, Inflammatory, heart attacks, chest pain, stroke",Drugs.com
+Aspirin,chest pain,"Pain, Fever, Inflammatory, heart attacks, chest pain, stroke",Drugs.com
+Aspirin,stroke,"Pain, Fever, Inflammatory, heart attacks, chest pain, stroke",Drugs.com
+Atorvastatin,cholesterol,"lower cholesterol and lower  triglycerides  levels to help prevent prevent heart disease, angina, strokes, and heart attacks.",Drugs.com
+Atorvastatin,heart disease,"lower cholesterol and lower  triglycerides  levels to help prevent prevent heart disease, angina, strokes, and heart attacks.",Drugs.com
+Atorvastatin,angina,"lower cholesterol and lower  triglycerides  levels to help prevent prevent heart disease, angina, strokes, and heart attacks.",Drugs.com
+Atorvastatin,strokes,"lower cholesterol and lower  triglycerides  levels to help prevent prevent heart disease, angina, strokes, and heart attacks.",Drugs.com
+Atorvastatin,heart attacks,"lower cholesterol and lower  triglycerides  levels to help prevent prevent heart disease, angina, strokes, and heart attacks.",Drugs.com
+Azithromycin,infections,"Bacterial infections in various body parts, prevention of MAC in HIV patients",MayoClinic
+Azithromycin, hiv ,"Bacterial infections in various body parts, prevention of MAC in HIV patients",MayoClinic
+Cetirizine, runny nose,"Allergies such as runny nose, red and watery eyes, as well as itchiness.",Drugbank
+Cetirizine,red,"Allergies such as runny nose, red and watery eyes, as well as itchiness.",Drugbank
+Cetirizine,watery eyes,"Allergies such as runny nose, red and watery eyes, as well as itchiness.",Drugbank
+Cetirizine, itchiness,"Allergies such as runny nose, red and watery eyes, as well as itchiness.",Drugbank
+Clopidogrel,heart disease,Heart Disease,NIPH
+Codeine, pain,Relief of mild to moderate pain,MayoClinic
+Dexamethasone,inflammatory,"various inflammatory conditions, including bronchial asthma, as well as endocrine and rheumatic disorders.",Drugbank
+Dexamethasone,asthma,"various inflammatory conditions, including bronchial asthma, as well as endocrine and rheumatic disorders.",Drugbank
+Dexamethasone,endocrine,"various inflammatory conditions, including bronchial asthma, as well as endocrine and rheumatic disorders.",Drugbank
+Dexamethasone,rheumatic,"various inflammatory conditions, including bronchial asthma, as well as endocrine and rheumatic disorders.",Drugbank
+Fluoxetine,depression,Depression,WHO
+Gabapentin,seizures,Seizures,WHO
+Hydrochlorothiazide,high blood pressure,High Blood Pressure,WHO
+Ibuprofen,reduce fever,"reduce fever, pain, and inflammation",Drugbank
+Ibuprofen,pain,"reduce fever, pain, and inflammation",Drugbank
+Ibuprofen,inflammation,"reduce fever, pain, and inflammation",Drugbank
+Insulin,blood sugar,"Type 1 and Type 2 diabetes, lowers and controls blood sugar",MayoClinic
+Levothyroxine,thyroid hormone,treat patients with low levels of thyroid hormone.,Drugbank
+Lisinopril,high blood pressure,High Blood Pressure,WHO
+Losartan,high blood pressure,"High blood pressure, reduces stroke risk in patients with enlarged heart, treats kidney problems in type 2 diabetes",MayoClinic
+Losartan,stroke,"High blood pressure, reduces stroke risk in patients with enlarged heart, treats kidney problems in type 2 diabetes",MayoClinic
+Losartan,kidney,"High blood pressure, reduces stroke risk in patients with enlarged heart, treats kidney problems in type 2 diabetes",MayoClinic
+Metformin,glucose absorption,"Type 2 Diabetes, reduces glucose absorption from the intestines, lowers liver glucose production, and improves insulin sensitivity",Drugs.com
+Metformin,glucose production,"Type 2 Diabetes, reduces glucose absorption from the intestines, lowers liver glucose production, and improves insulin sensitivity",Drugs.com
+Metformin,insulin sensitivity,"Type 2 Diabetes, reduces glucose absorption from the intestines, lowers liver glucose production, and improves insulin sensitivity",Drugs.com
+Morphine,pain,Severe Pain,WHO
+Naproxen,arthritis,Arthritis,NIPH
+Omeprazole,heartburn,"heartburn, and to treat related conditions such as ulcers, tissue damage and infection with the bacteria called H. pylori.",Drugbank
+Omeprazole,ulcers,"heartburn, and to treat related conditions such as ulcers, tissue damage and infection with the bacteria called H. pylori.",Drugbank
+Omeprazole,tissue damage,"heartburn, and to treat related conditions such as ulcers, tissue damage and infection with the bacteria called H. pylori.",Drugbank
+Omeprazole,pylori,"heartburn, and to treat related conditions such as ulcers, tissue damage and infection with the bacteria called H. pylori.",Drugbank
+Paracetamol,fever,"Fever, pain, headaches, colds/flu symptoms, arthritis pain, muscle aches, toothache, sore throat, menstrual pain",Drugs.com
+Paracetamol,pain,"Fever, pain, headaches, colds/flu symptoms, arthritis pain, muscle aches, toothache, sore throat, menstrual pain",Drugs.com
+Paracetamol,headaches,"Fever, pain, headaches, colds/flu symptoms, arthritis pain, muscle aches, toothache, sore throat, menstrual pain",Drugs.com
+Paracetamol,colds/flu,"Fever, pain, headaches, colds/flu symptoms, arthritis pain, muscle aches, toothache, sore throat, menstrual pain",Drugs.com
+Paracetamol,arthritis pain,"Fever, pain, headaches, colds/flu symptoms, arthritis pain, muscle aches, toothache, sore throat, menstrual pain",Drugs.com
+Paracetamol,muscle aches,"Fever, pain, headaches, colds/flu symptoms, arthritis pain, muscle aches, toothache, sore throat, menstrual pain",Drugs.com
+Paracetamol,toothache,"Fever, pain, headaches, colds/flu symptoms, arthritis pain, muscle aches, toothache, sore throat, menstrual pain",Drugs.com
+Paracetamol,sore throat,"Fever, pain, headaches, colds/flu symptoms, arthritis pain, muscle aches, toothache, sore throat, menstrual pain",Drugs.com
+Paracetamol,menstrual pain,"Fever, pain, headaches, colds/flu symptoms, arthritis pain, muscle aches, toothache, sore throat, menstrual pain",Drugs.com
+Prednisone,inflammation,Inflammation,NIPH
+Ranitidine,ulcers,Ulcers,WHO
+Simvastatin,high cholesterol,"High cholesterol, high triglycerides, prevention of heart attacks and strokes",MayoClinic
+Simvastatin,high triglycerides,"High cholesterol, high triglycerides, prevention of heart attacks and strokes",MayoClinic
+Simvastatin,heart attacks,"High cholesterol, high triglycerides, prevention of heart attacks and strokes",MayoClinic
+Simvastatin,strokes,"High cholesterol, high triglycerides, prevention of heart attacks and strokes",MayoClinic
+Warfarin,blood clot,Blood Clot,NIPH
