@@ -1,0 +1,7 @@
+drug_name,cause_name,original_cause,source
+Losartan,high blood pressure,High blood pressure (hypertension),https://www.mayoclinic.org/drugs-supplements/losartan-oral-route/description/drg-20067341
+Simvastatin,high cholesterol ,High cholesterol and triglycerides (hyperlipidemia),https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Simvastatin,hyperlipidemia,High cholesterol and triglycerides (hyperlipidemia),https://www.mayoclinic.org/drugs-supplements/simvastatin-and-niacin-oral-route/description/drg-20071610
+Azithromycin,bacterial infection,Bacterial infection (including Mycobacterium avium complex in HIV),https://www.mayoclinic.org/drugs-supplements/azithromycin-intravenous-route/description/drg-20062196
+Insulin,high blood sugar,Diabetes mellitus (high blood sugar due to lack of insulin or insulin resistance),https://www.mayoclinic.org/drugs-supplements/insulin-aspart-and-insulin-degludec-subcutaneous-route/description/drg-20155716
+Codeine,pain,Pain (mild to moderate),https://www.mayoclinic.org/drugs-supplements/codeine-oral-route/description/drg-20074022
