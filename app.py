@@ -25,23 +25,33 @@ import torch
 
 st.set_page_config(page_title="Healthcare – Drug Interaction Checker", page_icon="💊", layout="centered")
 
-# Minimal, smaller heading + basic styling
+# ── Minimal styling (smaller title, full-width button, styled log)
 st.markdown(
     """
     <style>
-      .app-title{font-size:1.10rem;font-weight:700;margin:0.25rem 0 0.75rem}
+      .app-title{font-size:1.10rem;font-weight:700;margin:0.25rem 0 0.25rem}
+      .advice{color:#4b5563;font-size:0.9rem;margin-bottom:0.75rem}
       .stTextInput>div>div>input{font-size:0.95rem}
       .stButton>button{width:100%}
       .section-h{font-size:1.05rem;font-weight:600;margin:1rem 0 0.35rem}
       .para-box{background:#f6f7f9;border:1px solid #e5e7eb;border-radius:8px;padding:10px}
       .log-time{color:#6b7280;font-size:0.8rem}
+      .log-entry{border-radius:10px;padding:10px;margin-bottom:8px;border:1px solid #e5e7eb}
+      .log-user{background:#eef6ff}   /* light blue */
+      .log-bot{background:#f8fafc}    /* very light gray */
+      .log-who{font-weight:600;margin-right:8px}
     </style>
     """,
     unsafe_allow_html=True,
 )
-st.markdown('<div class="app-title">Healthcare — Drug–Drug Interaction Checker</div>', unsafe_allow_html=True)
 
-# ── Secrets (exact keys)
+st.markdown('<div class="app-title">Healthcare — Drug–Drug Interaction Checker</div>', unsafe_allow_html=True)
+st.markdown(
+    '<div class="advice">Use the drug checker to find interactions and get simple guidance.</div>',
+    unsafe_allow_html=True,
+)
+
+# ── Secrets (exact keys you use)
 NEO4J_URI  = st.secrets["NEO4J_URI"]
 NEO4J_USER = st.secrets["NEO4J_USERNAME"]
 NEO4J_PASS = st.secrets["NEO4J_PASS"]
@@ -55,7 +65,8 @@ def get_driver():
 @st.cache_resource(show_spinner=False)
 def get_llm():
     """
-    Use base GPT-2 (small, CPU-friendly). Use slow tokenizer to avoid Rust wheels.
+    Use base GPT-2 (small, CPU-friendly).
+    Use slow tokenizer to avoid Rust wheels on Cloud.
     """
     model_id = "gpt2"
     tok = AutoTokenizer.from_pretrained(model_id, use_fast=False)
@@ -190,17 +201,20 @@ def all_pairs(drugs):
 if "chat_log" not in st.session_state:
     st.session_state.chat_log = []
 
-# ── UI
-query = st.text_input(
-    "Question",
-    placeholder="Enter 2+ drug names in natural language…",
-    key="query",
-    label_visibility="collapsed",
-)
-go = st.button("Check interactions", type="primary")
+# ── UI (form clears on submit, so no SessionState errors)
+with st.form("qform", clear_on_submit=True):
+    query = st.text_input(
+        "Question",
+        placeholder="Enter 2+ drug names in natural language…",
+        key="query",
+        label_visibility="collapsed",
+    )
+    go = st.form_submit_button("Check interactions", type="primary")
 
 if go:
-    user_text = (st.session_state.query or "").strip()
+    user_text = (query or "").strip()
+
+    # log user message
     if user_text:
         st.session_state.chat_log.append(
             {"role": "user", "text": user_text, "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
@@ -253,20 +267,28 @@ if go:
                 if d2_info.get("Warnings"): st.write("Warnings: " + ", ".join(d2_info["Warnings"]))
                 if d2_info.get("Precautions"): st.write("Precautions: " + ", ".join(d2_info["Precautions"]))
 
+        # bot log
         st.session_state.chat_log.append(
             {"role": "bot", "text": "\n".join(bot_summary_lines), "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
         )
 
-    # Clear the input after processing
-    st.session_state.query = ""
-
-# ── Simple timestamped log at the bottom
+# ── Timestamped emoji log (newest first)
 if st.session_state.chat_log:
     st.markdown('<div class="section-h">Log</div>', unsafe_allow_html=True)
-    for item in st.session_state.chat_log[::-1]:  # newest first
-        who = "User" if item["role"] == "user" else "Bot"
-        st.markdown(f'<span class="log-time">{item["time"]} — {who}</span>', unsafe_allow_html=True)
-        st.write(item["text"])
-        st.markdown("---")
+    for item in st.session_state.chat_log[::-1]:
+        is_user = (item["role"] == "user")
+        who_emoji = "🧑‍💬" if is_user else "🤖"
+        who_label = "User" if is_user else "Bot"
+        css_class = "log-user" if is_user else "log-bot"
+        st.markdown(
+            f"""
+            <div class="log-entry {css_class}">
+              <span class="log-time">{item["time"]}</span>
+              <span class="log-who">{who_emoji} {who_label}</span><br/>
+              {item["text"]}
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
 st.caption("Note: Results are limited to interactions present in your Neo4j graph.")
