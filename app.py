@@ -7,7 +7,6 @@
 # NEO4J_DATABASE = "neo4j"
 # ─────────────────────────────────────────────────────────────────────────────
 
-import os
 import re
 from datetime import datetime
 from difflib import get_close_matches
@@ -15,7 +14,7 @@ from difflib import get_close_matches
 import streamlit as st
 from neo4j import GraphDatabase
 
-# Robust transformers import (version-proof)
+# Transformers import (version-proof)
 try:
     from transformers import AutoTokenizer, AutoModelForCausalLM
 except ImportError:
@@ -30,7 +29,7 @@ st.set_page_config(page_title="Healthcare – Drug Interaction Checker", page_ic
 st.markdown(
     """
     <style>
-      .app-title{font-size:1.35rem;font-weight:700;margin:0.25rem 0 0.75rem}
+      .app-title{font-size:1.10rem;font-weight:700;margin:0.25rem 0 0.75rem}
       .stTextInput>div>div>input{font-size:0.95rem}
       .stButton>button{width:100%}
       .section-h{font-size:1.05rem;font-weight:600;margin:1rem 0 0.35rem}
@@ -48,7 +47,7 @@ NEO4J_USER = st.secrets["NEO4J_USERNAME"]
 NEO4J_PASS = st.secrets["NEO4J_PASS"]
 DB_NAME    = st.secrets["NEO4J_DATABASE"]
 
-# ── Caching: driver and LLM
+# ── Caching: driver and LLM (GPT-2 only)
 @st.cache_resource(show_spinner=False)
 def get_driver():
     return GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASS))
@@ -56,34 +55,12 @@ def get_driver():
 @st.cache_resource(show_spinner=False)
 def get_llm():
     """
-    Try primary (Phi-2). If it fails (likely Cloud memory), silently fall back
-    to a tiny model sufficient for single-sentence paraphrasing.
+    Use base GPT-2 (small, CPU-friendly). Use slow tokenizer to avoid Rust wheels.
     """
-    primary = "microsoft/phi-2"
-    fallback = "sshleifer/tiny-gpt2"
-
-    def load_tok(name: str):
-        try:
-            return AutoTokenizer.from_pretrained(name)
-        except Exception:
-            return AutoTokenizer.from_pretrained(name, use_fast=False)
-
-    # Try Phi-2 with CPU-safe settings
-    try:
-        tok = load_tok(primary)
-        mdl = AutoModelForCausalLM.from_pretrained(
-            primary,
-            low_cpu_mem_usage=False,   # avoid Accelerate warning
-            torch_dtype=torch.float32, # CPU safe
-            device_map=None,           # don't assume GPU
-            trust_remote_code=True,
-        )
-        return tok, mdl
-    except Exception:
-        # Silent fallback; no UI warnings
-        tok = load_tok(fallback)
-        mdl = AutoModelForCausalLM.from_pretrained(fallback)
-        return tok, mdl
+    model_id = "gpt2"
+    tok = AutoTokenizer.from_pretrained(model_id, use_fast=False)
+    mdl = AutoModelForCausalLM.from_pretrained(model_id)
+    return tok, mdl
 
 driver = get_driver()
 tokenizer, model = get_llm()
@@ -178,10 +155,7 @@ def get_interactions(d1: str, d2: str):
         return s.run(GET_INTERACTION, drug1=d1, drug2=d2).data()
 
 def paraphrase_reason_one_sentence(text: str) -> str:
-    """
-    One short, patient-friendly sentence.
-    Do NOT add info or invent risks; just rephrase the given reason.
-    """
+    """One short, patient-friendly sentence. No extra info; just rephrase."""
     t = (text or "").strip()
     if not t:
         return ""
@@ -191,14 +165,16 @@ def paraphrase_reason_one_sentence(text: str) -> str:
         f'Text: "{t}"'
     )
     inputs = tokenizer(prompt, return_tensors="pt")
+    # GPT-2 has no pad token: use eos as pad if needed
+    eos_id = getattr(tokenizer, "eos_token_id", None)
     inputs = {k: v.to(model.device) for k, v in inputs.items()}
     with torch.inference_mode():
         outputs = model.generate(
             **inputs,
             max_new_tokens=50,
             do_sample=False,
-            pad_token_id=getattr(tokenizer, "eos_token_id", None),
-            eos_token_id=getattr(tokenizer, "eos_token_id", None),
+            pad_token_id=eos_id,
+            eos_token_id=eos_id,
         )
     out = tokenizer.decode(outputs[0], skip_special_tokens=True).strip()
     out = out.split(".")[0].strip()
@@ -277,7 +253,6 @@ if go:
                 if d2_info.get("Warnings"): st.write("Warnings: " + ", ".join(d2_info["Warnings"]))
                 if d2_info.get("Precautions"): st.write("Precautions: " + ", ".join(d2_info["Precautions"]))
 
-        # Append bot summary to log
         st.session_state.chat_log.append(
             {"role": "bot", "text": "\n".join(bot_summary_lines), "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
         )
