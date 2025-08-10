@@ -7,7 +7,9 @@
 # NEO4J_DATABASE = "neo4j"
 # ─────────────────────────────────────────────────────────────────────────────
 
+import os
 import re
+from datetime import datetime
 from difflib import get_close_matches
 
 import streamlit as st
@@ -22,14 +24,25 @@ except ImportError:
 
 import torch
 
-st.set_page_config(
-    page_title="Healthcare – Drug Interaction Checker",
-    page_icon="💊",
-    layout="centered",
-)
-st.title("💊 Healthcare — Drug–Drug Interaction Checker")
+st.set_page_config(page_title="Healthcare – Drug Interaction Checker", page_icon="💊", layout="centered")
 
-# ── Secrets (exact keys as you requested)
+# Minimal, smaller heading + basic styling
+st.markdown(
+    """
+    <style>
+      .app-title{font-size:1.35rem;font-weight:700;margin:0.25rem 0 0.75rem}
+      .stTextInput>div>div>input{font-size:0.95rem}
+      .stButton>button{width:100%}
+      .section-h{font-size:1.05rem;font-weight:600;margin:1rem 0 0.35rem}
+      .para-box{background:#f6f7f9;border:1px solid #e5e7eb;border-radius:8px;padding:10px}
+      .log-time{color:#6b7280;font-size:0.8rem}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+st.markdown('<div class="app-title">Healthcare — Drug–Drug Interaction Checker</div>', unsafe_allow_html=True)
+
+# ── Secrets (exact keys)
 NEO4J_URI  = st.secrets["NEO4J_URI"]
 NEO4J_USER = st.secrets["NEO4J_USERNAME"]
 NEO4J_PASS = st.secrets["NEO4J_PASS"]
@@ -43,10 +56,8 @@ def get_driver():
 @st.cache_resource(show_spinner=False)
 def get_llm():
     """
-    Primary vs Fallback:
-      - primary: microsoft/phi-2  (better quality, needs more RAM)
-      - fallback: sshleifer/tiny-gpt2 (very small; works on Streamlit Cloud free tier)
-    We try primary first; if it fails (likely memory), we load fallback automatically.
+    Try primary (Phi-2). If it fails (likely Cloud memory), silently fall back
+    to a tiny model sufficient for single-sentence paraphrasing.
     """
     primary = "microsoft/phi-2"
     fallback = "sshleifer/tiny-gpt2"
@@ -55,39 +66,33 @@ def get_llm():
         try:
             return AutoTokenizer.from_pretrained(name)
         except Exception:
-            # If fast (Rust) tokenizer not available, use pure-Python
             return AutoTokenizer.from_pretrained(name, use_fast=False)
 
-    # Try loading the primary model with CPU-friendly settings
+    # Try Phi-2 with CPU-safe settings
     try:
         tok = load_tok(primary)
         mdl = AutoModelForCausalLM.from_pretrained(
             primary,
-            low_cpu_mem_usage=True,
-            torch_dtype=torch.float32,  # CPU safe
-            device_map=None,            # don’t assume GPU on Cloud
+            low_cpu_mem_usage=False,   # avoid Accelerate warning
+            torch_dtype=torch.float32, # CPU safe
+            device_map=None,           # don't assume GPU
             trust_remote_code=True,
         )
         return tok, mdl
-    except Exception as e:
-        st.warning(
-            f"Couldn’t load {primary} (likely memory limits on Cloud). "
-            f"Falling back to a tiny model. Details: {e}"
-        )
-
-    # Fallback model (loads everywhere)
-    tok = load_tok(fallback)
-    mdl = AutoModelForCausalLM.from_pretrained(fallback)
-    return tok, mdl
+    except Exception:
+        # Silent fallback; no UI warnings
+        tok = load_tok(fallback)
+        mdl = AutoModelForCausalLM.from_pretrained(fallback)
+        return tok, mdl
 
 driver = get_driver()
 tokenizer, model = get_llm()
 
 # ── Stopwords + tokenization helpers
 STOPWORDS = {
-    "a","an","and","are","as","at","be","by","for","from","has","he","in",
-    "is","it","its","of","on","that","the","to","was","were","will","with",
-    "you","your","yours","we","us","can","i","what","how","why","reason","when"
+    "a","an","and","are","as","at","be","by","for","from","has","he","in","is","it","its",
+    "of","on","that","the","to","was","were","will","with","you","your","yours","we","us",
+    "can","i","what","how","why","reason","when","now","take","am","having"
 }
 WORD_RE = re.compile(r"\b[a-zA-Z][a-zA-Z]+\b")
 
@@ -142,20 +147,17 @@ def extract_drugs(text: str):
         if lw in known:
             found.append(lw)
         else:
-            # spell-correct softly against known drugs
             m = get_close_matches(lw, known, n=1, cutoff=0.88)
             if m:
                 found.append(m[0])
             else:
                 unknown.append(w)
     # unique while preserving order
-    seen = set()
-    found_u = []
+    seen = set(); out = []
     for d in found:
         if d not in seen:
-            found_u.append(d)
-            seen.add(d)
-    return found_u, unknown
+            out.append(d); seen.add(d)
+    return out, unknown
 
 def get_drug_details(drug_lc: str):
     with driver.session(database=DB_NAME) as s:
@@ -208,56 +210,88 @@ def all_pairs(drugs):
         for j in range(i + 1, n):
             yield drugs[i], drugs[j]
 
+# ── Session state for logs
+if "chat_log" not in st.session_state:
+    st.session_state.chat_log = []
+
 # ── UI
 query = st.text_input(
-    "Type your question (e.g., “Can I take Ibuprofen with Dexamethasone?”)",
-    placeholder="Enter 2+ drug names in natural language…"
+    "Question",
+    placeholder="Enter 2+ drug names in natural language…",
+    key="query",
+    label_visibility="collapsed",
 )
 go = st.button("Check interactions", type="primary")
 
 if go:
-    drugs, unknown = extract_drugs(query)
+    user_text = (st.session_state.query or "").strip()
+    if user_text:
+        st.session_state.chat_log.append(
+            {"role": "user", "text": user_text, "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+        )
+
+    drugs, unknown = extract_drugs(user_text)
     if unknown:
-        st.warning("Unrecognized names (check spelling or try another): " + ", ".join(unknown))
+        st.warning("Unrecognized names: " + ", ".join(unknown))
     if len(drugs) < 2:
         st.info("Please include at least two valid drug names.")
     else:
+        bot_summary_lines = []
         for d1, d2 in all_pairs(drugs):
             d1_info = get_drug_details(d1)
             d2_info = get_drug_details(d2)
             recs = get_interactions(d1, d2)
 
-            st.subheader(f"🔎 {d1_info.get('Drug', d1)}  ×  {d2_info.get('Drug', d2)}")
+            st.markdown(f'<div class="section-h">{d1_info.get("Drug", d1)} × {d2_info.get("Drug", d2)}</div>', unsafe_allow_html=True)
             if recs:
                 reasons = [r.get("reason", "").strip() for r in recs if r.get("reason")]
                 reasons = [r for r in reasons if r]
                 types = sorted({(r.get("type") or "Unknown") for r in recs})
                 combined_reason = " ".join(reasons).strip()
 
-                with st.expander("Raw reason(s) from Neo4j", expanded=False):
+                with st.expander("Neo4j reasons", expanded=False):
                     for i, rr in enumerate(reasons, 1):
-                        st.write(f" Reason {i}:  {rr}")
-                    st.caption("Source: r.reason on :INTERACTS_WITH")
+                        st.write(f"{i}. {rr}")
 
                 paraphrase = paraphrase_reason_one_sentence(combined_reason) if combined_reason else ""
                 if paraphrase:
-                    st.success(paraphrase)
+                    st.markdown(f'<div class="para-box">{paraphrase}</div>', unsafe_allow_html=True)
+                    bot_summary_lines.append(f"{d1_info.get('Drug', d1)} × {d2_info.get('Drug', d2)} — {paraphrase}")
                 else:
-                    st.info("Interaction noted, but no reason text stored in the graph.")
+                    st.write("Reason text is missing in the graph.")
+                    bot_summary_lines.append(f"{d1_info.get('Drug', d1)} × {d2_info.get('Drug', d2)} — reason missing")
 
-                st.write(f" Type(s): {', '.join(types)}")
+                st.write("Type(s): " + ", ".join(types))
             else:
-                st.info("No known interaction found in the database.")
+                st.write("No known interaction found in the database.")
+                bot_summary_lines.append(f"{d1_info.get('Drug', d1)} × {d2_info.get('Drug', d2)} — no interaction found")
 
-            with st.expander(f"About {d1_info.get('Drug', d1)}"):
-                if d1_info.get("Treats"): st.write(" Treats: " + ", ".join(d1_info["Treats"]))
-                if d1_info.get("SideEffects"): st.write(" Side effects: " + ", ".join(d1_info["SideEffects"]))
-                if d1_info.get("Warnings"): st.write(" Warnings: " + ", ".join(d1_info["Warnings"]))
-                if d1_info.get("Precautions"): st.write(" Precautions: " + ", ".join(d1_info["Precautions"]))
-            with st.expander(f"About {d2_info.get('Drug', d2)}"):
-                if d2_info.get("Treats"): st.write(" Treats: " + ", ".join(d2_info["Treats"]))
-                if d2_info.get("SideEffects"): st.write(" Side effects: " + ", ".join(d2_info["SideEffects"]))
-                if d2_info.get("Warnings"): st.write(" Warnings: " + ", ".join(d2_info["Warnings"]))
-                if d2_info.get("Precautions"): st.write(" Precautions: " + ", ".join(d2_info["Precautions"]))
+            with st.expander(f"Details — {d1_info.get('Drug', d1)}"):
+                if d1_info.get("Treats"): st.write("Treats: " + ", ".join(d1_info["Treats"]))
+                if d1_info.get("SideEffects"): st.write("Side effects: " + ", ".join(d1_info["SideEffects"]))
+                if d1_info.get("Warnings"): st.write("Warnings: " + ", ".join(d1_info["Warnings"]))
+                if d1_info.get("Precautions"): st.write("Precautions: " + ", ".join(d1_info["Precautions"]))
+            with st.expander(f"Details — {d2_info.get('Drug', d2)}"):
+                if d2_info.get("Treats"): st.write("Treats: " + ", ".join(d2_info["Treats"]))
+                if d2_info.get("SideEffects"): st.write("Side effects: " + ", ".join(d2_info["SideEffects"]))
+                if d2_info.get("Warnings"): st.write("Warnings: " + ", ".join(d2_info["Warnings"]))
+                if d2_info.get("Precautions"): st.write("Precautions: " + ", ".join(d2_info["Precautions"]))
 
-        st.caption("Note: Results are limited to interactions present in your Neo4j graph. No writes are performed.")
+        # Append bot summary to log
+        st.session_state.chat_log.append(
+            {"role": "bot", "text": "\n".join(bot_summary_lines), "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+        )
+
+    # Clear the input after processing
+    st.session_state.query = ""
+
+# ── Simple timestamped log at the bottom
+if st.session_state.chat_log:
+    st.markdown('<div class="section-h">Log</div>', unsafe_allow_html=True)
+    for item in st.session_state.chat_log[::-1]:  # newest first
+        who = "User" if item["role"] == "user" else "Bot"
+        st.markdown(f'<span class="log-time">{item["time"]} — {who}</span>', unsafe_allow_html=True)
+        st.write(item["text"])
+        st.markdown("---")
+
+st.caption("Note: Results are limited to interactions present in your Neo4j graph.")
