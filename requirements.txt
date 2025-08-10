@@ -1,8 +1,8 @@
 streamlit
 neo4j
-transformers
+transformers==4.42.4
+tokenizers==0.19.1
 torch
-rake-nltk
-nltk
-accelerate
+
+
 
