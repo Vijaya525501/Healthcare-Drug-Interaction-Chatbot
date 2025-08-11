@@ -15,7 +15,7 @@ from zoneinfo import ZoneInfo
 import streamlit as st
 from neo4j import GraphDatabase
 
-# Try transformers; app still works without it
+# Transformers are optional; app still works without them
 try:
     from transformers import AutoTokenizer, AutoModelForCausalLM
     _HAS_TRF = True
@@ -25,11 +25,11 @@ except Exception:
 
 import torch
 
-ATL = ZoneInfo("America/Glace_Bay")  # Atlantic time for all timestamps
+ATL = ZoneInfo("America/Glace_Bay")  # Atlantic time
 
 st.set_page_config(page_title="Healthcare – Drug Interaction Checker", page_icon="💊", layout="centered")
 
-# ── Minimal styling (solid title color, badges, tidy layout)
+# ── Styling (solid title color, tidy layout)
 st.markdown(
     """
     <style>
@@ -92,7 +92,7 @@ def get_llm():
         return None, None
     model_id = "gpt2"
     try:
-        tok = AutoTokenizer.from_pretrained(model_id, use_fast=False)
+        tok = AutoTokenizer.from_pretrained(model_id, use_fast=False)  # avoid Rust wheel
         mdl = AutoModelForCausalLM.from_pretrained(model_id)
         return tok, mdl
     except Exception:
@@ -101,7 +101,7 @@ def get_llm():
 driver = get_driver()
 tokenizer, model = get_llm()
 
-# ── Helpers
+# ── Helpers (defined BEFORE use)
 STOPWORDS = {
     "a","an","and","are","as","at","be","by","for","from","has","he","in","is","it","its",
     "of","on","that","the","to","was","were","will","with","you","your","yours","we","us",
@@ -111,8 +111,10 @@ STOPWORDS = {
 }
 WORD_RE = re.compile(r"\b[a-zA-Z][a-zA-Z]+\b")
 ALIASES = {
-    "acetaminophen":"paracetamol","tylenol":"paracetamol","panadol":"paracetamol",
-    "advil":"ibuprofen","motrin":"ibuprofen","asa":"aspirin"
+    # common brands
+    "tylenol":"paracetamol","panadol":"paracetamol","advil":"ibuprofen","motrin":"ibuprofen","asa":"aspirin",
+    # common misspellings
+    "asprin":"aspirin","paracetmol":"paracetamol","paracetemol":"paracetamol","ibuprofin":"ibuprofen"
 }
 EXIT_PATTERN = re.compile(r"\b(bye|goodbye|exit|quit|stop|thanks|thank you)\b", re.I)
 
@@ -165,7 +167,8 @@ def extract_drugs(text: str):
         if lw in known:
             found.append(lw)
         else:
-            m = get_close_matches(lw, known, n=1, cutoff=0.88)
+            # softer fuzzy match to catch typos like "paracetmol"
+            m = get_close_matches(lw, known, n=1, cutoff=0.80)
             if m: found.append(m[0])
             else: ignored.append(w)
     seen=set(); out=[]
@@ -174,11 +177,28 @@ def extract_drugs(text: str):
             out.append(d); seen.add(d)
     return out, ignored
 
+def get_drug_details(drug_lc: str):
+    with driver.session(database=DB_NAME) as s:
+        rec = s.run(GET_DETAILS, drug=drug_lc).single()
+        if not rec:
+            return {"Drug": drug_lc}
+        return {
+            "Drug": rec["Drug"] or drug_lc,
+            "Treats": flatten_unique(rec["Treats"]),
+            "SideEffects": flatten_unique(rec["SideEffects"]),
+            "Warnings": flatten_unique(rec["Warnings"]),
+            "Precautions": flatten_unique(rec["Precautions"]),
+            "Causes": flatten_unique(rec["Causes"]),
+        }
+
+def get_interactions(d1: str, d2: str):
+    with driver.session(database=DB_NAME) as s:
+        return s.run(GET_INTERACTION, drug1=d1, drug2=d2).data()
+
 def _escape_html(s: str) -> str:
     return s.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
 
-# ---------- Guidance generation (anti-repetition) ----------
-
+# ---------- Guidance generation (anti-repetition + safe fallback) ----------
 _RISK_MAP = [
     (re.compile(r"\bbleed\w*|gi bleed|ulcer", re.I), "bleeding risk"),
     (re.compile(r"\bsedat\w*|drowsi\w*|cns depress", re.I), "drowsiness and slowed reactions"),
@@ -224,10 +244,8 @@ def _severity_from_types(types):
 
 def _clean_guidance_text(txt: str) -> str:
     if not txt: return ""
-    # remove "Advice:" prefixes and collapse repeats (a a a → a)
     txt = re.sub(r"(?i)\badvice\s*:\s*", "", txt).strip()
     txt = re.sub(r"\b(\w+)(\s+\1\b){1,}", r"\1", txt)  # collapse repeated words
-    # keep one sentence, end with period
     txt = txt.split("\n")[-1].strip()
     txt = txt.split(".")[0].strip()
     if txt and not txt.endswith("."):
@@ -238,10 +256,9 @@ def _guidance_with_gpt2(reason_text: str, types, d1_info: dict, d2_info: dict) -
     if not (tokenizer and model):
         return ""
     ctx_bits = []
-    for label, key in [("Warnings", "Warnings"), ("Precautions", "Precautions"), ("Side effects", "SideEffects")]:
+    for label, key in [("Warnings","Warnings"),("Precautions","Precautions"),("Side effects","SideEffects")]:
         vals = (d1_info.get(key) or []) + (d2_info.get(key) or [])
-        uniq = []
-        seen = set()
+        uniq, seen = [], set()
         for v in vals:
             v = str(v).strip()
             if v and v not in seen:
@@ -279,10 +296,7 @@ def _guidance_with_gpt2(reason_text: str, types, d1_info: dict, d2_info: dict) -
     return _clean_guidance_text(txt)
 
 def guidance_sentence(reason_text: str, types, d1_info: dict, d2_info: dict) -> str:
-    """Hybrid: try GPT-2 with anti-repetition; if weak, fall back to deterministic guidance."""
-    # 1) try model
     g = _guidance_with_gpt2(reason_text, types, d1_info, d2_info) if (tokenizer and model) else ""
-    # if too short or still weird, fall back
     if len(g.split()) < 4:
         risks = _pick_risks(reason_text, d1_info, d2_info)
         sev = _severity_from_types(types)
@@ -316,7 +330,7 @@ if go:
     st.markdown(
         f"""
         <div class="conv-row">
-          <div class="conv-ico">🧑‍💬</div>
+          <div class="conv-ico">🧑</div>
           <div class="conv-card">
             <div class="conv-meta">{when} — User</div>
             {_escape_html(user_text)}
@@ -347,21 +361,16 @@ if go:
             unsafe_allow_html=True,
         )
     else:
-        # normal processing
-        def get_known_drug_names_cached():
-            return get_known_drug_names()
-
         drugs, ignored_terms = extract_drugs(user_text)
         # keep ignored terms only in logs (no on-screen warning)
         if ignored_terms:
-            st.session_state.chat_log.append(
-                {"role":"system","text":"ignored_terms: "+", ".join(ignored_terms), "time": when}
-            )
+            st.session_state.chat_log.append({"role":"system","text":"ignored_terms: "+", ".join(ignored_terms), "time": when})
 
-        # Drugs detected (keep)
+        # Drugs detected
         if drugs:
             st.markdown('<div class="section-h">Drugs detected</div>', unsafe_allow_html=True)
-            st.markdown("".join([f'<span class="pill">{d}</span>' for d in drugs]), unsafe_allow_html=True)
+            chips = " ".join([f'<span class="pill">{_escape_html(d)}</span>' for d in drugs])  # space for clarity
+            st.markdown(chips, unsafe_allow_html=True)
 
         if len(drugs) < 2:
             st.info("Please include at least two valid drug names.")
@@ -369,13 +378,14 @@ if go:
             st.markdown('<div class="section-h">Results</div>', unsafe_allow_html=True)
 
             bot_lines = []
+            # iterate all unique pairs
             for i in range(len(drugs)):
                 for j in range(i+1, len(drugs)):
                     d1, d2 = drugs[i], drugs[j]
-                    with driver.session(database=DB_NAME) as s:
-                        d1_info = get_drug_details(d1)
-                        d2_info = get_drug_details(d2)
-                        recs    = s.run(GET_INTERACTION, drug1=d1, drug2=d2).data()
+
+                    d1_info = get_drug_details(d1)
+                    d2_info = get_drug_details(d2)
+                    recs    = get_interactions(d1, d2)
 
                     pair_title = f"{d1_info.get('Drug', d1)} × {d2_info.get('Drug', d2)}"
                     st.markdown(f'<div class="pair-title">{pair_title}</div>', unsafe_allow_html=True)
@@ -387,11 +397,14 @@ if go:
 
                         st.markdown('<span class="badge badge-hit">Interaction in database</span>', unsafe_allow_html=True)
 
-                        # show types as chips
+                        # show types as chips (no raw reasons)
                         if types:
-                            st.markdown('<div class="types-line">Interaction type(s): ' +
-                                        "".join([f'<span class="type-chip">{_escape_html(t)}</span>' for t in types]) +
-                                        '</div>', unsafe_allow_html=True)
+                            st.markdown(
+                                '<div class="types-line">Interaction type(s): ' +
+                                " ".join([f'<span class="type-chip">{_escape_html(t)}</span>' for t in types]) +
+                                '</div>',
+                                unsafe_allow_html=True,
+                            )
 
                         # details
                         with st.expander(f"Details — {d1_info.get('Drug', d1)}"):
@@ -405,9 +418,12 @@ if go:
                             if d2_info.get("Warnings"): st.write("Warnings: " + ", ".join(d2_info["Warnings"]))
                             if d2_info.get("Precautions"): st.write("Precautions: " + ", ".join(d2_info["Precautions"]))
 
-                        # Bot response (now robust)
+                        # Bot response (hybrid: model + fallback)
                         guidance = guidance_sentence(combined_reason, types, d1_info, d2_info)
-                        st.markdown(f'<div class="para-card"><div class="para-head">Bot response</div>{_escape_html(guidance)}</div>', unsafe_allow_html=True)
+                        st.markdown(
+                            f'<div class="para-card"><div class="para-head">Bot response</div>{_escape_html(guidance)}</div>',
+                            unsafe_allow_html=True,
+                        )
                         bot_lines.append(f"{pair_title} — {guidance}")
                     else:
                         st.markdown('<span class="badge badge-ok">No known interaction found</span>', unsafe_allow_html=True)
@@ -423,7 +439,11 @@ if go:
                             if d2_info.get("Warnings"): st.write("Warnings: " + ", ".join(d2_info["Warnings"]))
                             if d2_info.get("Precautions"): st.write("Precautions: " + ", ".join(d2_info["Precautions"]))
 
-                        st.markdown(f'<div class="para-card"><div class="para-head">Bot response</div>No interaction found for this pair.</div>', unsafe_allow_html=True)
+                        # Friendly line for no interaction
+                        st.markdown(
+                            f'<div class="para-card"><div class="para-head">Bot response</div>No interaction found for this pair.</div>',
+                            unsafe_allow_html=True,
+                        )
                         bot_lines.append(f"{pair_title} — no interaction found")
 
             if bot_lines:
