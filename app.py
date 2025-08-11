@@ -209,6 +209,50 @@ def pharmacodynamic_definitions_block(types):
         '</div>'
     )
 
+# ---- helpers to steer advice quality ----
+_ALLOWED_LEADS = ("Avoid", "Use only with", "Monitor", "Separate doses", "Ask your clinician")
+
+_RISK_PATTERNS = [
+    (re.compile(r"\bbleed\w*|gi bleed|ulcer", re.I), "stomach bleeding"),
+    (re.compile(r"\bsedat\w*|drowsi\w*|cns depress", re.I), "drowsiness"),
+    (re.compile(r"\bserotonin", re.I), "serotonin syndrome"),
+    (re.compile(r"\bqt\b|qt prolong|long qt|torsad", re.I), "heart-rhythm problems"),
+    (re.compile(r"\bhypo?glyc", re.I), "blood-sugar changes"),
+    (re.compile(r"\bhyperk", re.I), "high potassium"),
+    (re.compile(r"\brenal|\bkidney", re.I), "kidney strain"),
+    (re.compile(r"\bhepatic|\bliver", re.I), "liver stress"),
+    (re.compile(r"\bblood pressure|hypotens|hypertens", re.I), "blood-pressure changes"),
+    (re.compile(r"\bgi|stomach|gastric", re.I), "stomach irritation"),
+]
+
+def _key_risks(reason_text: str, d1: dict, d2: dict):
+    blob = " ".join(filter(None, [
+        reason_text or "",
+        " ".join(d1.get("Warnings") or []),
+        " ".join(d1.get("Precautions") or []),
+        " ".join(d1.get("SideEffects") or []),
+        " ".join(d2.get("Warnings") or []),
+        " ".join(d2.get("Precautions") or []),
+        " ".join(d2.get("SideEffects") or []),
+    ]))
+    found, seen = [], set()
+    for rx, label in _RISK_PATTERNS:
+        if rx.search(blob) and label not in seen:
+            found.append(label); seen.add(label)
+        if len(found) == 2: break
+    return found  # up to 2 strings
+
+def _severity_phrase(types):
+    t = " ".join([x.lower() for x in (types or [])])
+    if "contra" in t: return "avoid using together"
+    if "major" in t or "severe" in t: return "use only with medical advice"
+    if "moderate" in t: return "monitor closely or seek advice"
+    if "minor" in t: return "generally low risk"
+    if "antagon" in t: return "effects may oppose each other"
+    if "synerg" in t or "additive" in t: return "effects may add up"
+    if "indirect" in t: return "indirect, organ-level effects possible"
+    return "may interact"
+
 # ---------- LLM guidance (single short sentence) ----------
 def _clean_llm(txt: str) -> str:
     if not txt: return ""
@@ -227,62 +271,66 @@ def _clean_llm(txt: str) -> str:
     return re.sub(r"\s{2,}", " ", txt)
 
 def guidance_with_llm(reason_text: str, types, d1_info: dict, d2_info: dict):
-    """Returns (advice_text, basis_dict). basis_dict explains what was fed to the LLM."""
+    """Returns (advice_text, basis_dict). Uses FLAN-T5 with tight prompting and post-checks."""
     if not (tokenizer and model):
         return "", {"types": types or [], "reason_present": False, "context_used": ""}
 
-    # compact context from details
-    def pick(key):
-        vals = (d1_info.get(key) or []) + (d2_info.get(key) or [])
-        uniq, seen = [], set()
-        for v in vals:
-            v = str(v).strip()
-            if v and v not in seen:
-                uniq.append(v); seen.add(v)
-        return ", ".join(uniq[:6])
-
-    ctx_bits = []
-    for label, key in [("Warnings","Warnings"),("Precautions","Precautions"),("Side effects","SideEffects")]:
-        s = pick(key)
-        if s:
-            ctx_bits.append(f"{label}: {s}")
-    ctx = " ".join(ctx_bits)[:300]
+    # 1) summarize risk context (short + relevant)
+    risks = _key_risks(reason_text, d1_info, d2_info)
+    risk_line = "; ".join(risks) if risks else ""
     type_line = ", ".join(types) if types else "Unknown"
     reason_present = bool(reason_text and reason_text.strip())
 
+    # 2) tightly-scoped instruction (no dosing/schedules; force a clean lead)
+    lead_options = "; ".join(_ALLOWED_LEADS)
     prompt = (
-        "Rewrite the following drug-interaction info into ONE short, patient-friendly suggestion.\n"
-        "Use ONLY the provided types/reason/context. Do not invent facts.\n"
-        "Return EXACTLY ONE sentence, under 24 words, in plain English.\n"
-        "Prefer: 'Avoid', 'Use only with', 'Monitor', 'Separate doses', 'Ask your clinician'.\n"
-        "NEVER mention doses, counts, schedules, durations, or start/stop instructions.\n"
-        "\n"
+        "Rewrite the drug-interaction info as ONE short, patient-friendly sentence.\n"
+        "Use ONLY the provided types/reason/risks. Do not invent facts.\n"
+        f"Start the sentence with one of: {lead_options}.\n"
+        "Do NOT mention doses, counts, schedules, durations, or start/stop instructions.\n"
+        "Max 24 words. Plain English.\n"
         f"Types: {type_line}\n"
         f"Reason: {'present' if reason_present else 'n/a'}\n"
-        f"Context: {ctx if ctx else 'n/a'}\n"
+        f"Key risks: {risk_line if risk_line else 'n/a'}\n"
         "Suggestion:"
     )
 
+    # 3) generate
     inputs = tokenizer(prompt, return_tensors="pt")
     inputs = {k: v.to(model.device) for k, v in inputs.items()}
     with torch.inference_mode():
         outputs = model.generate(
             **inputs,
-            max_new_tokens=32,
+            max_new_tokens=28,
             num_beams=4,
             early_stopping=True,
             no_repeat_ngram_size=3,
         )
     txt = tokenizer.decode(outputs[0], skip_special_tokens=True).strip()
-    # Keep only what comes after 'Suggestion:' if echoed
     if "Suggestion:" in txt:
         txt = txt.split("Suggestion:", 1)[1].strip()
 
+    # 4) clean and validate
     advice = _clean_llm(txt)
+    if not advice or not advice.startswith(_ALLOWED_LEADS):
+        # construct a safe, readable fallback from types + risks
+        sev = _severity_phrase(types)
+        risk_part = f" due to {', '.join(risks)}" if risks else ""
+        if sev.startswith("avoid"):
+            advice = f"Avoid taking together{risk_part}—ask your clinician."
+        elif "use only with" in sev:
+            advice = f"Use only with advice{risk_part}; monitor for symptoms and consult your clinician."
+        elif "monitor" in sev:
+            advice = f"Monitor for side effects{risk_part} and discuss with your clinician."
+        elif "low risk" in sev:
+            advice = f"Generally low risk; watch for symptoms and ask your clinician if unsure."
+        else:
+            advice = f"May interact{risk_part}; check with your clinician."
+
     basis = {
         "types": types or [],
         "reason_present": reason_present,
-        "context_used": ctx
+        "context_used": (", ".join(risks) if risks else "n/a")
     }
     return advice, basis
 
