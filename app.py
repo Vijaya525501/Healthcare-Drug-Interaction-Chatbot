@@ -25,49 +25,70 @@ import torch
 
 st.set_page_config(page_title="Healthcare – Drug Interaction Checker", page_icon="💊", layout="centered")
 
-# ── Minimal styling (smaller title, full-width button, styled log)
+# ── Styling
 st.markdown(
     """
     <style>
-      .app-title{font-size:1.10rem;font-weight:700;margin:0.25rem 0 0.25rem}
-      .advice{color:#4b5563;font-size:0.9rem;margin-bottom:0.75rem}
+      :root{
+        --border:#e5e7eb;
+        --muted:#6b7280;
+        --soft:#f8fafc;
+        --chip:#f9fafb;
+      }
+      .title-wrap{display:flex;align-items:center;gap:.6rem;margin:.25rem 0 .25rem}
+      .title-icon{font-size:1.4rem;line-height:1}
+      .app-title{
+        font-size:1.35rem;font-weight:800;letter-spacing:.2px;
+        background:linear-gradient(90deg,#111827 0%,#0ea5e9 60%,#14b8a6 100%);
+        -webkit-background-clip:text;background-clip:text;color:transparent;
+      }
+      .advice{color:var(--muted);font-size:0.92rem;margin:.15rem 0 .9rem}
       .stTextInput>div>div>input{font-size:0.95rem}
       .stButton>button{width:100%}
-      .section-h{font-size:1.05rem;font-weight:600;margin:1rem 0 0.35rem}
-      .para-box{background:#f6f7f9;border:1px solid #e5e7eb;border-radius:8px;padding:10px}
-      .log-time{color:#6b7280;font-size:0.8rem}
-      .log-entry{border-radius:10px;padding:10px;margin-bottom:8px;border:1px solid #e5e7eb}
-      .log-user{background:#eef6ff}   /* light blue */
-      .log-bot{background:#f8fafc}    /* very light gray */
-      .log-who{font-weight:600;margin-right:8px}
+      .section-h{font-size:1.05rem;font-weight:700;margin:.9rem 0 .35rem}
+      .pair-title{font-weight:700;margin:.6rem 0 .25rem}
+      .badge{display:inline-block;padding:2px 8px;border-radius:9999px;
+             font-size:.80rem;font-weight:700;border:1px solid var(--border)}
+      .badge-hit{background:#fef2f2;color:#7f1d1d;border-color:#fecaca}
+      .badge-ok{background:#ecfdf5;color:#065f46;border-color:#a7f3d0}
+      .pill{display:inline-block;padding:4px 10px;margin:4px 6px 0 0;border-radius:9999px;
+            font-size:0.85rem;border:1px solid var(--border);background:var(--chip)}
+      .para-card{border:1px solid var(--border);background:#f6f7f9;border-radius:10px;padding:10px}
+      .para-head{font-weight:700;margin-bottom:4px;color:#111827}
+      .conv-row{display:flex;gap:.6rem;align-items:flex-start;margin:1rem 0 .2rem}
+      .conv-ico{font-size:1.1rem}
+      .conv-card{flex:1;border:1px solid var(--border);background:var(--soft);
+                 border-radius:10px;padding:10px}
+      .conv-meta{color:var(--muted);font-size:.8rem;margin-bottom:4px}
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-st.markdown('<div class="app-title">Healthcare — Drug–Drug Interaction Checker</div>', unsafe_allow_html=True)
 st.markdown(
-    '<div class="advice">Use the drug checker to find interactions and get simple guidance.</div>',
+    """
+    <div class="title-wrap">
+      <span class="title-icon">💊</span>
+      <div class="app-title">Healthcare — Drug–Drug Interaction Checker</div>
+    </div>
+    """,
     unsafe_allow_html=True,
 )
+st.markdown('<div class="advice">Use the drug checker to find interactions and get simple guidance.</div>', unsafe_allow_html=True)
 
-# ── Secrets (exact keys you use)
+# ── Secrets
 NEO4J_URI  = st.secrets["NEO4J_URI"]
 NEO4J_USER = st.secrets["NEO4J_USERNAME"]
 NEO4J_PASS = st.secrets["NEO4J_PASS"]
 DB_NAME    = st.secrets["NEO4J_DATABASE"]
 
-# ── Caching: driver and LLM (GPT-2 only)
+# ── Cache: driver + GPT-2 (slow tokenizer avoids Rust wheels)
 @st.cache_resource(show_spinner=False)
 def get_driver():
     return GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASS))
 
 @st.cache_resource(show_spinner=False)
 def get_llm():
-    """
-    Use base GPT-2 (small, CPU-friendly).
-    Use slow tokenizer to avoid Rust wheels on Cloud.
-    """
     model_id = "gpt2"
     tok = AutoTokenizer.from_pretrained(model_id, use_fast=False)
     mdl = AutoModelForCausalLM.from_pretrained(model_id)
@@ -76,15 +97,23 @@ def get_llm():
 driver = get_driver()
 tokenizer, model = get_llm()
 
-# ── Stopwords + tokenization helpers
+# ── Stopwords, aliases, extraction helpers
 STOPWORDS = {
     "a","an","and","are","as","at","be","by","for","from","has","he","in","is","it","its",
     "of","on","that","the","to","was","were","will","with","you","your","yours","we","us",
-    "can","i","what","how","why","reason","when","now","take","am","having"
+    "can","i","what","how","why","reason","when","now","take","am","having","together",
+    "safe","safely","use","using","mix","combine","combined","are","do","does","okay","ok",
+    "there","any","interactions","between"
 }
 WORD_RE = re.compile(r"\b[a-zA-Z][a-zA-Z]+\b")
+ALIASES = {
+    "acetaminophen":"paracetamol","tylenol":"paracetamol","panadol":"paracetamol",
+    "advil":"ibuprofen","motrin":"ibuprofen","asa":"aspirin"
+}
 
-# ── Cypher queries
+# Exit intent detection
+EXIT_PATTERN = re.compile(r"\b(bye|goodbye|exit|quit|stop|thanks|thank you)\b", re.I)
+
 GET_KNOWN_DRUGS = "MATCH (d:Drug) RETURN toLower(d.name) AS name"
 GET_DETAILS = """
 MATCH (d:Drug)
@@ -116,36 +145,32 @@ def get_known_drug_names():
 def flatten_unique(seq):
     seen, out = set(), []
     for x in (seq or []):
-        if not x:
-            continue
+        if not x: continue
         x = str(x).strip()
         if x and x not in seen:
-            seen.add(x)
-            out.append(x)
+            seen.add(x); out.append(x)
     return out
 
 def extract_drugs(text: str):
     known = get_known_drug_names()
     words = WORD_RE.findall(text or "")
-    found, unknown = [], []
+    found, ignored = [], []
     for w in words:
         lw = w.lower()
         if lw in STOPWORDS:
-            continue
+            ignored.append(w); continue
+        lw = ALIASES.get(lw, lw)
         if lw in known:
             found.append(lw)
         else:
             m = get_close_matches(lw, known, n=1, cutoff=0.88)
-            if m:
-                found.append(m[0])
-            else:
-                unknown.append(w)
-    # unique while preserving order
-    seen = set(); out = []
+            if m: found.append(m[0])
+            else: ignored.append(w)
+    seen=set(); out=[]
     for d in found:
         if d not in seen:
             out.append(d); seen.add(d)
-    return out, unknown
+    return out, ignored
 
 def get_drug_details(drug_lc: str):
     with driver.session(database=DB_NAME) as s:
@@ -168,24 +193,19 @@ def get_interactions(d1: str, d2: str):
 def paraphrase_reason_one_sentence(text: str) -> str:
     """One short, patient-friendly sentence. No extra info; just rephrase."""
     t = (text or "").strip()
-    if not t:
-        return ""
+    if not t: return ""
     prompt = (
         "Rewrite the following in one short, patient-friendly sentence. "
         "Do not add information or name interaction types. "
         f'Text: "{t}"'
     )
     inputs = tokenizer(prompt, return_tensors="pt")
-    # GPT-2 has no pad token: use eos as pad if needed
-    eos_id = getattr(tokenizer, "eos_token_id", None)
+    eos_id = getattr(tokenizer, "eos_token_id", None)  # GPT-2 pad fix
     inputs = {k: v.to(model.device) for k, v in inputs.items()}
     with torch.inference_mode():
         outputs = model.generate(
-            **inputs,
-            max_new_tokens=50,
-            do_sample=False,
-            pad_token_id=eos_id,
-            eos_token_id=eos_id,
+            **inputs, max_new_tokens=50, do_sample=False,
+            pad_token_id=eos_id, eos_token_id=eos_id
         )
     out = tokenizer.decode(outputs[0], skip_special_tokens=True).strip()
     out = out.split(".")[0].strip()
@@ -197,98 +217,136 @@ def all_pairs(drugs):
         for j in range(i + 1, n):
             yield drugs[i], drugs[j]
 
-# ── Session state for logs
+def _escape_html(s: str) -> str:
+    return s.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
+
+# ── Session state for logs (NOT displayed)
 if "chat_log" not in st.session_state:
     st.session_state.chat_log = []
 
-# ── UI (form clears on submit, so no SessionState errors)
+# ── INPUT (form clears on submit)
 with st.form("qform", clear_on_submit=True):
     query = st.text_input(
         "Question",
-        placeholder="Enter 2+ drug names in natural language…",
+        placeholder="Enter drug names (e.g., Ibuprofen with Dexamethasone?)",
         key="query",
         label_visibility="collapsed",
     )
     go = st.form_submit_button("Check interactions", type="primary")
 
+latest_user = None
+latest_bot  = None
+
+# ── PROCESS
 if go:
     user_text = (query or "").strip()
+    when = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # log user message
     if user_text:
-        st.session_state.chat_log.append(
-            {"role": "user", "text": user_text, "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-        )
+        st.session_state.chat_log.append({"role":"user","text":user_text,"time":when})
+        latest_user = {"text": user_text, "time": when}
 
-    drugs, unknown = extract_drugs(user_text)
-    if unknown:
-        st.warning("Unrecognized names: " + ", ".join(unknown))
-    if len(drugs) < 2:
-        st.info("Please include at least two valid drug names.")
+    # Exit intent: say goodbye and skip processing
+    if user_text and EXIT_PATTERN.search(user_text):
+        goodbye = "Goodbye! Have a nice day."
+        st.session_state.chat_log.append({"role":"bot","text":goodbye,"time":when})
+        latest_bot = {"text": goodbye, "time": when}
     else:
-        bot_summary_lines = []
-        for d1, d2 in all_pairs(drugs):
-            d1_info = get_drug_details(d1)
-            d2_info = get_drug_details(d2)
-            recs = get_interactions(d1, d2)
+        drugs, ignored_terms = extract_drugs(user_text)
 
-            st.markdown(f'<div class="section-h">{d1_info.get("Drug", d1)} × {d2_info.get("Drug", d2)}</div>', unsafe_allow_html=True)
-            if recs:
-                reasons = [r.get("reason", "").strip() for r in recs if r.get("reason")]
-                reasons = [r for r in reasons if r]
-                types = sorted({(r.get("type") or "Unknown") for r in recs})
-                combined_reason = " ".join(reasons).strip()
+        # keep ignored terms only in logs (no on-screen warning)
+        if ignored_terms:
+            st.session_state.chat_log.append(
+                {"role":"system","text":"ignored_terms: "+", ".join(ignored_terms), "time": when}
+            )
 
-                with st.expander("Neo4j reasons", expanded=False):
-                    for i, rr in enumerate(reasons, 1):
-                        st.write(f"{i}. {rr}")
+        if len(drugs) < 2:
+            st.info("Please include at least two valid drug names.")
+        else:
+            # context chips
+            st.markdown('<div class="section-h">Drugs detected</div>', unsafe_allow_html=True)
+            st.markdown("".join([f'<span class="pill">{d}</span>' for d in drugs]), unsafe_allow_html=True)
 
-                paraphrase = paraphrase_reason_one_sentence(combined_reason) if combined_reason else ""
-                if paraphrase:
-                    st.markdown(f'<div class="para-box">{paraphrase}</div>', unsafe_allow_html=True)
-                    bot_summary_lines.append(f"{d1_info.get('Drug', d1)} × {d2_info.get('Drug', d2)} — {paraphrase}")
+            bot_lines = []
+            st.markdown('<div class="section-h">Results</div>', unsafe_allow_html=True)
+
+            for d1, d2 in all_pairs(drugs):
+                d1_info = get_drug_details(d1)
+                d2_info = get_drug_details(d2)
+                recs    = get_interactions(d1, d2)
+
+                pair_title = f"{d1_info.get('Drug', d1)} × {d2_info.get('Drug', d2)}"
+                st.markdown(f'<div class="pair-title">{pair_title}</div>', unsafe_allow_html=True)
+
+                if recs:
+                    # dedupe reasons
+                    raw_reasons = [r.get("reason","").strip() for r in recs if r.get("reason")]
+                    reasons = []
+                    seen = set()
+                    for rr in raw_reasons:
+                        if rr and rr not in seen:
+                            reasons.append(rr); seen.add(rr)
+                    combined_reason = " ".join(reasons).strip()
+
+                    st.markdown('<span class="badge badge-hit">Interaction in database</span>', unsafe_allow_html=True)
+
+                    if combined_reason:
+                        guidance = paraphrase_reason_one_sentence(combined_reason)
+                        if guidance:
+                            st.markdown(f'<div class="para-card"><div class="para-head">Guidance</div>{guidance}</div>', unsafe_allow_html=True)
+                            bot_lines.append(f"{pair_title} — {guidance}")
+                    with st.expander("Neo4j reasons", expanded=False):
+                        if reasons:
+                            for i, rr in enumerate(reasons, 1):
+                                st.write(f"{i}. {rr}")
+                        else:
+                            st.caption("No reason text present for this relationship.")
                 else:
-                    st.write("Reason text is missing in the graph.")
-                    bot_summary_lines.append(f"{d1_info.get('Drug', d1)} × {d2_info.get('Drug', d2)} — reason missing")
+                    st.markdown('<span class="badge badge-ok">No known interaction found</span>', unsafe_allow_html=True)
+                    bot_lines.append(f"{pair_title} — no interaction found")
 
-                st.write("Type(s): " + ", ".join(types))
-            else:
-                st.write("No known interaction found in the database.")
-                bot_summary_lines.append(f"{d1_info.get('Drug', d1)} × {d2_info.get('Drug', d2)} — no interaction found")
+                # Optional compact details
+                with st.expander(f"Details — {d1_info.get('Drug', d1)}"):
+                    if d1_info.get("Treats"): st.write("Treats: " + ", ".join(d1_info["Treats"]))
+                    if d1_info.get("SideEffects"): st.write("Side effects: " + ", ".join(d1_info["SideEffects"]))
+                    if d1_info.get("Warnings"): st.write("Warnings: " + ", ".join(d1_info["Warnings"]))
+                    if d1_info.get("Precautions"): st.write("Precautions: " + ", ".join(d1_info["Precautions"]))
+                with st.expander(f"Details — {d2_info.get('Drug', d2)}"):
+                    if d2_info.get("Treats"): st.write("Treats: " + ", ".join(d2_info["Treats"]))
+                    if d2_info.get("SideEffects"): st.write("Side effects: " + ", ".join(d2_info["SideEffects"]))
+                    if d2_info.get("Warnings"): st.write("Warnings: " + ", ".join(d2_info["Warnings"]))
+                    if d2_info.get("Precautions"): st.write("Precautions: " + ", ".join(d2_info["Precautions"]))
 
-            with st.expander(f"Details — {d1_info.get('Drug', d1)}"):
-                if d1_info.get("Treats"): st.write("Treats: " + ", ".join(d1_info["Treats"]))
-                if d1_info.get("SideEffects"): st.write("Side effects: " + ", ".join(d1_info["SideEffects"]))
-                if d1_info.get("Warnings"): st.write("Warnings: " + ", ".join(d1_info["Warnings"]))
-                if d1_info.get("Precautions"): st.write("Precautions: " + ", ".join(d1_info["Precautions"]))
-            with st.expander(f"Details — {d2_info.get('Drug', d2)}"):
-                if d2_info.get("Treats"): st.write("Treats: " + ", ".join(d2_info["Treats"]))
-                if d2_info.get("SideEffects"): st.write("Side effects: " + ", ".join(d2_info["SideEffects"]))
-                if d2_info.get("Warnings"): st.write("Warnings: " + ", ".join(d2_info["Warnings"]))
-                if d2_info.get("Precautions"): st.write("Precautions: " + ", ".join(d2_info["Precautions"]))
+            bot_text = "\n".join(bot_lines)
+            st.session_state.chat_log.append({"role":"bot","text":bot_text,"time":when})
+            latest_bot = {"text": bot_text, "time": when}
 
-        # bot log
-        st.session_state.chat_log.append(
-            {"role": "bot", "text": "\n".join(bot_summary_lines), "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-        )
+# ── Compact conversation header (shows only latest turn)
+if latest_user:
+    st.markdown(
+        f"""
+        <div class="conv-row">
+          <div class="conv-ico">🧑‍💬</div>
+          <div class="conv-card">
+            <div class="conv-meta">{latest_user["time"]} — User</div>
+            {_escape_html(latest_user["text"])}
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+if latest_bot:
+    st.markdown(
+        f"""
+        <div class="conv-row">
+          <div class="conv-ico">🤖</div>
+          <div class="conv-card">
+            <div class="conv-meta">{latest_bot["time"]} — Bot</div>
+            {_escape_html(latest_bot["text"]) if latest_bot["text"] else "—"}
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
-# ── Timestamped emoji log (newest first)
-if st.session_state.chat_log:
-    st.markdown('<div class="section-h">Log</div>', unsafe_allow_html=True)
-    for item in st.session_state.chat_log[::-1]:
-        is_user = (item["role"] == "user")
-        who_emoji = "🧑‍💬" if is_user else "🤖"
-        who_label = "User" if is_user else "Bot"
-        css_class = "log-user" if is_user else "log-bot"
-        st.markdown(
-            f"""
-            <div class="log-entry {css_class}">
-              <span class="log-time">{item["time"]}</span>
-              <span class="log-who">{who_emoji} {who_label}</span><br/>
-              {item["text"]}
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-st.caption("Note: Results are limited to interactions present in your Neo4j graph.")
+#st.caption("Note: Results are limited to interactions present in your Neo4j graph.")
