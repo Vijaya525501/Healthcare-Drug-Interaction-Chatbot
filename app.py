@@ -68,7 +68,7 @@ DB_NAME    = st.secrets["NEO4J_DATABASE"]
 def get_driver():
     return GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASS))
 
-# Robust LLM loader with fallback + pad token fix
+# Robust LLM loader with silent fallback + pad token fix (no UI warnings)
 @st.cache_resource(show_spinner=True)
 def get_llm():
     if not _HAS_TRF:
@@ -90,21 +90,12 @@ def get_llm():
     tok, mdl = try_load("gpt2")
     if tok and mdl:
         return tok, mdl
-    st.warning("LLM fallback: using distilgpt2 (smaller model) because gpt2 failed to load.")
+    # silent fallback to distilgpt2
+    print("[LLM] Falling back to distilgpt2")
     return try_load("distilgpt2")
 
 driver = get_driver()
 tokenizer, model = get_llm()
-
-# Sidebar helper to retry LLM load without redeploying
-with st.sidebar:
-    if st.button("🔁 Retry LLM load"):
-        try:
-            get_llm.clear()
-        except Exception:
-            pass
-        tokenizer, model = get_llm()
-        st.success("Retried LLM load.")
 
 # ── Helpers
 STOPWORDS = {
@@ -230,6 +221,7 @@ def _clean_llm(txt: str) -> str:
         txt = re.sub(rf"(?i)\b{re.escape(b)}\b", "", txt)
     txt = re.sub(r"\b(\w+)(\s+\1\b){1,}", r"\1", txt)  # collapse repeats
     txt = txt.replace("\n", " ").strip()
+    # keep only ONE short sentence
     if "." in txt:
         txt = txt.split(".")[0]
     words = txt.split()
@@ -297,8 +289,18 @@ def guidance_with_llm(reason_text: str, types, d1_info: dict, d2_info: dict) -> 
             pad_token_id=eos_id,
             eos_token_id=eos_id,
         )
-    txt = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    return _clean_llm(txt)
+
+    # *** CRITICAL FIX: decode ONLY the newly generated tokens (not the prompt) ***
+    input_len = inputs["input_ids"].shape[1]
+    full_ids = outputs[0]
+    gen_only_ids = full_ids[input_len:]
+    raw = tokenizer.decode(gen_only_ids, skip_special_tokens=True).strip()
+
+    # If the model echoed "Suggestion:", keep only what comes after it
+    if "Suggestion:" in raw:
+        raw = raw.split("Suggestion:", 1)[1].strip()
+
+    return _clean_llm(raw)
 
 # ── Session state for logs (not shown on screen)
 if "chat_log" not in st.session_state:
@@ -402,7 +404,7 @@ if go:
                             if d2_info.get("Warnings"): st.write("Warnings: " + ", ".join(d2_info["Warnings"]))
                             if d2_info.get("Precautions"): st.write("Precautions: " + ", ".join(d2_info["Precautions"]))
 
-                        # LLM advice (with bot logo)
+                        # LLM advice (with bot logo), now properly decoding only the completion
                         guidance = guidance_with_llm(combined_reason, types, d1_info, d2_info)
                         if not guidance:
                             guidance = "Unable to generate advice right now. Please consult your clinician."
