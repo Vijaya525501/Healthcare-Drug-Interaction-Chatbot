@@ -3,3 +3,4 @@ neo4j
 transformers==4.42.4
 tokenizers==0.19.1
 torch
+sentencepiece>=0.1.99
