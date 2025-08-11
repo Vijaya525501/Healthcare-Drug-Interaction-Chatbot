@@ -16,13 +16,13 @@ from zoneinfo import ZoneInfo
 import streamlit as st
 from neo4j import GraphDatabase
 
-# LLM (CPU friendly). We’ll try gpt2, else distilgpt2.
+# LLM: FLAN-T5 (instruction-tuned, CPU-friendly)
 try:
-    from transformers import AutoTokenizer, AutoModelForCausalLM
+    from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
     import torch
     _HAS_TRF = True
 except Exception:
-    AutoTokenizer = AutoModelForCausalLM = None
+    AutoTokenizer = AutoModelForSeq2SeqLM = None
     torch = None
     _HAS_TRF = False
 
@@ -68,31 +68,28 @@ DB_NAME    = st.secrets["NEO4J_DATABASE"]
 def get_driver():
     return GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASS))
 
-# Robust LLM loader with silent fallback + pad token fix (no UI warnings)
+# FLAN-T5 loader (small → base fallback). No user-facing warnings.
 @st.cache_resource(show_spinner=True)
 def get_llm():
     if not _HAS_TRF:
         print("[LLM] transformers not available.")
         return None, None
 
-    def try_load(name: str):
+    def load(name: str):
         try:
-            tok = AutoTokenizer.from_pretrained(name, use_fast=False)  # avoid Rust fast tokenizer
-            mdl = AutoModelForCausalLM.from_pretrained(name)
-            if getattr(tok, "pad_token_id", None) is None and getattr(tok, "eos_token_id", None) is not None:
-                tok.pad_token = tok.eos_token
+            tok = AutoTokenizer.from_pretrained(name, use_fast=False)  # sentencepiece tokenizer
+            mdl = AutoModelForSeq2SeqLM.from_pretrained(name)
             print(f"[LLM] Loaded: {name}")
             return tok, mdl
         except Exception as e:
             print(f"[LLM] Failed {name}: {e}")
             return None, None
 
-    tok, mdl = try_load("gpt2")
+    tok, mdl = load("google/flan-t5-small")
     if tok and mdl:
         return tok, mdl
-    # silent fallback to distilgpt2
-    print("[LLM] Falling back to distilgpt2")
-    return try_load("distilgpt2")
+    print("[LLM] Falling back to google/flan-t5-base")
+    return load("google/flan-t5-base")
 
 driver = get_driver()
 tokenizer, model = get_llm()
@@ -157,7 +154,7 @@ def extract_drugs(text: str):
         if lw in known:
             found.append(lw)
         else:
-            m = get_close_matches(lw, known, n=1, cutoff=0.80)  # helpful for minor typos
+            m = get_close_matches(lw, known, n=1, cutoff=0.80)
             if m: found.append(m[0])
             else: ignored.append(w)
     seen=set(); out=[]
@@ -187,7 +184,7 @@ def get_interactions(d1: str, d2: str):
 def _escape_html(s: str) -> str:
     return s.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
 
-# ---------- Pharmacodynamic definitions block ----------
+# ---------- Pharmacodynamic definitions block (only the 4 you wanted) ----------
 PD_DEFS = {
     "additive":      "Same condition + shared risk",
     "synergistic":   "Different conditions + shared high risk effect",
@@ -212,30 +209,28 @@ def pharmacodynamic_definitions_block(types):
         '</div>'
     )
 
-# ---------- LLM guidance (single sentence) ----------
+# ---------- LLM guidance (single short sentence) ----------
 def _clean_llm(txt: str) -> str:
     if not txt: return ""
+    # remove odd prefixes/words and repetition; keep 1 short sentence
     banned = ["video", "recording", "above", "guidelines", "elements"]
     txt = re.sub(r"(?i)\b(advice|note|suggestion)\s*:\s*", "", txt).strip()
     for b in banned:
         txt = re.sub(rf"(?i)\b{re.escape(b)}\b", "", txt)
-    txt = re.sub(r"\b(\w+)(\s+\1\b){1,}", r"\1", txt)  # collapse repeats
     txt = txt.replace("\n", " ").strip()
-    # keep only ONE short sentence
-    if "." in txt:
-        txt = txt.split(".")[0]
+    txt = re.sub(r"\b(\w+)(\s+\1\b){1,}", r"\1", txt)          # collapse repeats
+    if "." in txt: txt = txt.split(".")[0]
     words = txt.split()
-    if len(words) > 24:
-        txt = " ".join(words[:24])
+    if len(words) > 24: txt = " ".join(words[:24])
     txt = txt.strip()
-    if txt and not txt.endswith("."):
-        txt += "."
-    txt = re.sub(r"\s{2,}", " ", txt)
-    return txt
+    if txt and not txt.endswith("."): txt += "."
+    return re.sub(r"\s{2,}", " ", txt)
 
-def guidance_with_llm(reason_text: str, types, d1_info: dict, d2_info: dict) -> str:
+def guidance_with_llm(reason_text: str, types, d1_info: dict, d2_info: dict):
+    """Returns (advice_text, basis_dict). basis_dict explains what was fed to the LLM."""
     if not (tokenizer and model):
-        return ""
+        return "", {"types": types or [], "reason_present": False, "context_used": ""}
+
     # compact context from details
     def pick(key):
         vals = (d1_info.get(key) or []) + (d2_info.get(key) or [])
@@ -253,54 +248,43 @@ def guidance_with_llm(reason_text: str, types, d1_info: dict, d2_info: dict) -> 
             ctx_bits.append(f"{label}: {s}")
     ctx = " ".join(ctx_bits)[:300]
     type_line = ", ".join(types) if types else "Unknown"
-    reason_line = reason_text if reason_text else "n/a"
+    reason_present = bool(reason_text and reason_text.strip())
 
     prompt = (
-        "You are rewriting drug-interaction information into ONE short, patient-friendly suggestion.\n"
-        "Use ONLY the data provided (types/reason/context). Do not invent facts.\n"
+        "Rewrite the following drug-interaction info into ONE short, patient-friendly suggestion.\n"
+        "Use ONLY the provided types/reason/context. Do not invent facts.\n"
         "Return EXACTLY ONE sentence, under 24 words, in plain English.\n"
         "Prefer: 'Avoid', 'Use only with', 'Monitor', 'Separate doses', 'Ask your clinician'.\n"
-        "Do not mention videos or guidelines.\n"
-        "\n"
-        "Example:\n"
-        "Types: moderate; Reason: n/a; Context: Warnings: GI bleeding, ulcer. -> Avoid taking together unless advised; risk of stomach bleeding—ask your clinician.\n"
-        "Example:\n"
-        "Types: pharmacokinetic; Reason: n/a; Context: Precautions: liver disease. -> Use only with advice; one drug can change levels—monitor and consult your clinician.\n"
+        "NEVER mention doses, counts, schedules, durations, or start/stop instructions.\n"
         "\n"
         f"Types: {type_line}\n"
-        f"Reason: {reason_line}\n"
+        f"Reason: {'present' if reason_present else 'n/a'}\n"
         f"Context: {ctx if ctx else 'n/a'}\n"
         "Suggestion:"
     )
 
-    eos_id = getattr(tokenizer, "eos_token_id", None)
     inputs = tokenizer(prompt, return_tensors="pt")
     inputs = {k: v.to(model.device) for k, v in inputs.items()}
-
     with torch.inference_mode():
         outputs = model.generate(
             **inputs,
-            max_new_tokens=42,
-            do_sample=True,
-            temperature=0.4,
-            top_p=0.9,
-            repetition_penalty=1.3,
-            no_repeat_ngram_size=4,
-            pad_token_id=eos_id,
-            eos_token_id=eos_id,
+            max_new_tokens=32,
+            num_beams=4,
+            early_stopping=True,
+            no_repeat_ngram_size=3,
         )
+    txt = tokenizer.decode(outputs[0], skip_special_tokens=True).strip()
+    # Keep only what comes after 'Suggestion:' if echoed
+    if "Suggestion:" in txt:
+        txt = txt.split("Suggestion:", 1)[1].strip()
 
-    # *** CRITICAL FIX: decode ONLY the newly generated tokens (not the prompt) ***
-    input_len = inputs["input_ids"].shape[1]
-    full_ids = outputs[0]
-    gen_only_ids = full_ids[input_len:]
-    raw = tokenizer.decode(gen_only_ids, skip_special_tokens=True).strip()
-
-    # If the model echoed "Suggestion:", keep only what comes after it
-    if "Suggestion:" in raw:
-        raw = raw.split("Suggestion:", 1)[1].strip()
-
-    return _clean_llm(raw)
+    advice = _clean_llm(txt)
+    basis = {
+        "types": types or [],
+        "reason_present": reason_present,
+        "context_used": ctx
+    }
+    return advice, basis
 
 # ── Session state for logs (not shown on screen)
 if "chat_log" not in st.session_state:
@@ -321,7 +305,7 @@ if go:
     user_text = (query or "").strip()
     when = datetime.now(ATL).strftime("%Y-%m-%d %H:%M:%S %Z")
 
-    # User message card (user icon only)
+    # User message card (user icon)
     st.markdown(
         f"""
         <div class="conv-row">
@@ -404,8 +388,8 @@ if go:
                             if d2_info.get("Warnings"): st.write("Warnings: " + ", ".join(d2_info["Warnings"]))
                             if d2_info.get("Precautions"): st.write("Precautions: " + ", ".join(d2_info["Precautions"]))
 
-                        # LLM advice (with bot logo), now properly decoding only the completion
-                        guidance = guidance_with_llm(combined_reason, types, d1_info, d2_info)
+                        # LLM advice (with bot logo)
+                        guidance, basis = guidance_with_llm(combined_reason, types, d1_info, d2_info)
                         if not guidance:
                             guidance = "Unable to generate advice right now. Please consult your clinician."
 
@@ -413,6 +397,12 @@ if go:
                             f'<div class="para-card"><div class="para-head">🤖 Bot</div>{_escape_html(guidance)}</div>',
                             unsafe_allow_html=True,
                         )
+                        with st.expander("Why this advice"):
+                            st.write("Interaction type(s):", ", ".join(types) if types else "Unknown")
+                            st.write("Reason text present in graph:", "Yes" if basis.get("reason_present") else "No")
+                            st.write("Context used:")
+                            st.code(basis.get("context_used") or "n/a", language="text")
+
                         st.caption("Generated by LLM from graph data.")
                         bot_lines.append(f"{pair_title} — {guidance}")
                     else:
@@ -430,7 +420,7 @@ if go:
                             if d2_info.get("Precautions"): st.write("Precautions: " + ", ".join(d2_info["Precautions"]))
 
                         st.markdown(
-                            f'<div class="para-card"><div class="para-head">🤖 Bot</div>No interaction found for this pair.</div>',
+                            f'<div class="para-card"><div class="para-head">🤖 Bot</div>No known interaction found</div>',
                             unsafe_allow_html=True,
                         )
                         bot_lines.append(f"{pair_title} — no interaction found")
