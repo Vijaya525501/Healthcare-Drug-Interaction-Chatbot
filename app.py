@@ -8,6 +8,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 
 import re
+from pathlib import Path
 from datetime import datetime
 from difflib import get_close_matches
 from zoneinfo import ZoneInfo
@@ -15,53 +16,28 @@ from zoneinfo import ZoneInfo
 import streamlit as st
 from neo4j import GraphDatabase
 
-# Transformers are optional; app still works without them
+# LLM (GPT-2; CPU friendly)
 try:
     from transformers import AutoTokenizer, AutoModelForCausalLM
+    import torch
     _HAS_TRF = True
 except Exception:
     AutoTokenizer = AutoModelForCausalLM = None
+    torch = None
     _HAS_TRF = False
 
-import torch
-
 ATL = ZoneInfo("America/Glace_Bay")  # Atlantic time
+ALWAYS_LLM = True  # force LLM-only guidance (no deterministic rewrite)
 
 st.set_page_config(page_title="Healthcare – Drug Interaction Checker", page_icon="💊", layout="centered")
 
-# ── Styling (solid title color, tidy layout)
-st.markdown(
-    """
-    <style>
-      :root{ --border:#e5e7eb; --muted:#6b7280; --soft:#f8fafc; --chip:#f9fafb; }
-      .title-wrap{display:flex;align-items:center;gap:.6rem;margin:.25rem 0 .25rem}
-      .title-icon{font-size:1.4rem;line-height:1}
-      .app-title{font-size:1.35rem;font-weight:800;letter-spacing:.2px;color:#111827}
-      .advice{color:var(--muted);font-size:0.92rem;margin:.15rem 0 .9rem}
-      .stTextInput>div>div>input{font-size:0.95rem}
-      .stButton>button{width:100%}
-      .section-h{font-size:1.05rem;font-weight:700;margin:1rem 0 .35rem}
-      .pair-title{font-weight:700;margin:.6rem 0 .25rem}
-      .pill{display:inline-block;padding:4px 10px;margin:4px 6px 0 0;border-radius:9999px;
-            font-size:0.85rem;border:1px solid var(--border);background:var(--chip)}
-      .badge{display:inline-block;padding:2px 8px;border-radius:9999px;
-             font-size:.80rem;font-weight:700;border:1px solid var(--border)}
-      .badge-hit{background:#fef2f2;color:#7f1d1d;border-color:#fecaca}
-      .badge-ok{background:#ecfdf5;color:#065f46;border-color:#a7f3d0}
-      .types-line{margin:.35rem 0 .2rem;color:#111827;font-size:.95rem}
-      .type-chip{display:inline-block;margin-right:.4rem;margin-top:.2rem;
-                 padding:2px 8px;border-radius:9999px;border:1px solid var(--border);background:#fff;font-size:.80rem}
-      .para-card{border:1px solid var(--border);background:#f6f7f9;border-radius:10px;padding:10px;margin-top:.35rem}
-      .para-head{font-weight:700;margin-bottom:4px;color:#111827}
-      .conv-row{display:flex;gap:.6rem;align-items:flex-start;margin:.5rem 0 .8rem}
-      .conv-ico{font-size:1.1rem}
-      .conv-card{flex:1;border:1px solid var(--border);background:var(--soft);
-                 border-radius:10px;padding:10px}
-      .conv-meta{color:#374151;font-size:.8rem;margin-bottom:4px}
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+# ── Load external CSS (styles.css must sit next to app.py)
+def load_css(file_path: str = "styles.css"):
+    p = Path(file_path)
+    if p.exists():
+        st.markdown(f"<style>{p.read_text()}</style>", unsafe_allow_html=True)
+
+load_css("styles.css")
 
 # Title + subline
 st.markdown(
@@ -81,7 +57,7 @@ NEO4J_USER = st.secrets["NEO4J_USERNAME"]
 NEO4J_PASS = st.secrets["NEO4J_PASS"]
 DB_NAME    = st.secrets["NEO4J_DATABASE"]
 
-# ── Cache: driver + (optional) GPT-2
+# ── Caches
 @st.cache_resource(show_spinner=False)
 def get_driver():
     return GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASS))
@@ -90,10 +66,9 @@ def get_driver():
 def get_llm():
     if not _HAS_TRF:
         return None, None
-    model_id = "gpt2"
     try:
-        tok = AutoTokenizer.from_pretrained(model_id, use_fast=False)  # avoid Rust wheel
-        mdl = AutoModelForCausalLM.from_pretrained(model_id)
+        tok = AutoTokenizer.from_pretrained("gpt2", use_fast=False)  # avoid Rust fast tokenizer
+        mdl = AutoModelForCausalLM.from_pretrained("gpt2")
         return tok, mdl
     except Exception:
         return None, None
@@ -101,7 +76,7 @@ def get_llm():
 driver = get_driver()
 tokenizer, model = get_llm()
 
-# ── Helpers (defined BEFORE use)
+# ── Helpers
 STOPWORDS = {
     "a","an","and","are","as","at","be","by","for","from","has","he","in","is","it","its",
     "of","on","that","the","to","was","were","will","with","you","your","yours","we","us",
@@ -110,12 +85,6 @@ STOPWORDS = {
     "there","any","interactions","between"
 }
 WORD_RE = re.compile(r"\b[a-zA-Z][a-zA-Z]+\b")
-ALIASES = {
-    # common brands
-    "tylenol":"paracetamol","panadol":"paracetamol","advil":"ibuprofen","motrin":"ibuprofen","asa":"aspirin",
-    # common misspellings
-    "asprin":"aspirin","paracetmol":"paracetamol","paracetemol":"paracetamol","ibuprofin":"ibuprofen"
-}
 EXIT_PATTERN = re.compile(r"\b(bye|goodbye|exit|quit|stop|thanks|thank you)\b", re.I)
 
 GET_KNOWN_DRUGS = "MATCH (d:Drug) RETURN toLower(d.name) AS name"
@@ -156,6 +125,7 @@ def flatten_unique(seq):
     return out
 
 def extract_drugs(text: str):
+    """No aliases. Exact match first, then soft fuzzy match to the DB names."""
     known = get_known_drug_names()
     words = WORD_RE.findall(text or "")
     found, ignored = [], []
@@ -163,12 +133,10 @@ def extract_drugs(text: str):
         lw = w.lower()
         if lw in STOPWORDS:
             ignored.append(w); continue
-        lw = ALIASES.get(lw, lw)
         if lw in known:
             found.append(lw)
         else:
-            # softer fuzzy match to catch typos like "paracetmol"
-            m = get_close_matches(lw, known, n=1, cutoff=0.80)
+            m = get_close_matches(lw, known, n=1, cutoff=0.80)  # helpful for minor typos
             if m: found.append(m[0])
             else: ignored.append(w)
     seen=set(); out=[]
@@ -198,114 +166,125 @@ def get_interactions(d1: str, d2: str):
 def _escape_html(s: str) -> str:
     return s.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
 
-# ---------- Guidance generation (anti-repetition + safe fallback) ----------
-_RISK_MAP = [
-    (re.compile(r"\bbleed\w*|gi bleed|ulcer", re.I), "bleeding risk"),
-    (re.compile(r"\bsedat\w*|drowsi\w*|cns depress", re.I), "drowsiness and slowed reactions"),
-    (re.compile(r"\bserotonin", re.I), "serotonin syndrome risk"),
-    (re.compile(r"\bqt\b|qt prolong|long qt|torsad", re.I), "heart rhythm problems"),
-    (re.compile(r"\bhypo?glyc", re.I), "blood sugar changes"),
-    (re.compile(r"\bhyperk", re.I), "high potassium"),
-    (re.compile(r"\brenal|\bkidney", re.I), "kidney strain"),
-    (re.compile(r"\bhepatic|\bliver", re.I), "liver stress"),
-    (re.compile(r"\bblood pressure|hypotens|hypertens", re.I), "blood pressure changes"),
-    (re.compile(r"\bgi|stomach|gastric", re.I), "stomach/intestinal side effects"),
-]
+# ---------- Interaction type definitions ----------
+TYPE_DEFS = {
+    "contraindicated": "Do not use together; risks outweigh benefits.",
+    "major": "High-risk combination; significant chance of serious side effects.",
+    "severe": "High-risk combination; significant chance of serious side effects.",
+    "moderate": "May increase side effects; use only with clinical advice.",
+    "minor": "Low risk; usually safe, but monitor for symptoms.",
+    "antagonistic": "One drug may reduce the effect of the other.",
+    "synergistic": "Effects may add up or become stronger together.",
+    "pharmacokinetic": "One drug may change the level of the other (absorption/metabolism).",
+    "pharmacodynamic": "Similar actions increase effect when combined.",
+    "duplicate": "Drugs with the same effect increase overall exposure.",
+    "additive": "Effects add together, increasing overall impact.",
+}
 
-def _pick_risks(reason_text: str, d1_info: dict, d2_info: dict):
-    blob = " ".join([
-        reason_text or "",
-        " ".join(d1_info.get("Warnings") or []),
-        " ".join(d1_info.get("Precautions") or []),
-        " ".join(d1_info.get("SideEffects") or []),
-        " ".join(d2_info.get("Warnings") or []),
-        " ".join(d2_info.get("Precautions") or []),
-        " ".join(d2_info.get("SideEffects") or []),
-    ])
-    hits = []
-    seen = set()
-    for rx, label in _RISK_MAP:
-        if rx.search(blob) and label not in seen:
-            hits.append(label); seen.add(label)
-        if len(hits) >= 2:
-            break
-    return hits
+def type_definitions_line(types):
+    defs, seen = [], set()
+    for t in types:
+        key = t.lower().strip()
+        d = TYPE_DEFS.get(key)
+        if d and d not in seen:
+            defs.append(d); seen.add(d)
+        # partial matches
+        elif "contra" in key and "Do not use together; risks outweigh benefits." not in seen:
+            defs.append("Do not use together; risks outweigh benefits."); seen.add("Do not use together; risks outweigh benefits.")
+        elif "major" in key and "High-risk combination; significant chance of serious side effects." not in seen:
+            defs.append("High-risk combination; significant chance of serious side effects."); seen.add("High-risk combination; significant chance of serious side effects.")
+        elif "moderate" in key and "May increase side effects; use only with clinical advice." not in seen:
+            defs.append("May increase side effects; use only with clinical advice."); seen.add("May increase side effects; use only with clinical advice.")
+        elif "minor" in key and "Low risk; usually safe, but monitor for symptoms." not in seen:
+            defs.append("Low risk; usually safe, but monitor for symptoms."); seen.add("Low risk; usually safe, but monitor for symptoms.")
+        elif "antagon" in key and "One drug may reduce the effect of the other." not in seen:
+            defs.append("One drug may reduce the effect of the other."); seen.add("One drug may reduce the effect of the other.")
+        elif "synerg" in key and "Effects may add up or become stronger together." not in seen:
+            defs.append("Effects may add up or become stronger together."); seen.add("Effects may add up or become stronger together.")
+    return " ".join(defs[:2]) if defs else ""
 
-def _severity_from_types(types):
-    s = "may interact"
-    joined = " ".join([t.lower() for t in types])
-    if "contra" in joined:
-        s = "should generally not be used together"
-    elif "major" in joined or "severe" in joined:
-        s = "can cause serious problems"
-    elif "moderate" in joined:
-        s = "may increase risk"
-    return s
-
-def _clean_guidance_text(txt: str) -> str:
+# ---------- LLM guidance (primary, single sentence) ----------
+def _clean_llm(txt: str) -> str:
     if not txt: return ""
-    txt = re.sub(r"(?i)\badvice\s*:\s*", "", txt).strip()
-    txt = re.sub(r"\b(\w+)(\s+\1\b){1,}", r"\1", txt)  # collapse repeated words
-    txt = txt.split("\n")[-1].strip()
-    txt = txt.split(".")[0].strip()
+    # remove odd prefixes and words GPT-2 sometimes invents
+    banned = ["video", "recording", "above", "guidelines", "elements"]
+    txt = re.sub(r"(?i)\b(advice|note|suggestion)\s*:\s*", "", txt).strip()
+    for b in banned:
+        txt = re.sub(rf"(?i)\b{re.escape(b)}\b", "", txt)
+    # collapse repetition: "bleeding bleeding" -> "bleeding"
+    txt = re.sub(r"\b(\w+)(\s+\1\b){1,}", r"\1", txt)
+    # single short sentence
+    txt = txt.replace("\n", " ").strip()
+    if "." in txt:
+        txt = txt.split(".")[0]
+    words = txt.split()
+    if len(words) > 24:
+        txt = " ".join(words[:24])
+    txt = txt.strip()
     if txt and not txt.endswith("."):
         txt += "."
+    txt = re.sub(r"\s{2,}", " ", txt)
     return txt
 
-def _guidance_with_gpt2(reason_text: str, types, d1_info: dict, d2_info: dict) -> str:
+def guidance_with_llm(reason_text: str, types, d1_info: dict, d2_info: dict) -> str:
     if not (tokenizer and model):
         return ""
-    ctx_bits = []
-    for label, key in [("Warnings","Warnings"),("Precautions","Precautions"),("Side effects","SideEffects")]:
+    # compact context from details (warnings/precautions/side effects)
+    def pick(key):
         vals = (d1_info.get(key) or []) + (d2_info.get(key) or [])
         uniq, seen = [], set()
         for v in vals:
             v = str(v).strip()
             if v and v not in seen:
                 uniq.append(v); seen.add(v)
-        if uniq:
-            ctx_bits.append(f"{label}: {', '.join(uniq[:6])}")
+        return ", ".join(uniq[:6])
+
+    ctx_bits = []
+    for label, key in [("Warnings","Warnings"),("Precautions","Precautions"),("Side effects","SideEffects")]:
+        s = pick(key)
+        if s:
+            ctx_bits.append(f"{label}: {s}")
     ctx = " ".join(ctx_bits)[:300]
     type_line = ", ".join(types) if types else "Unknown"
+    reason_line = reason_text if reason_text else "n/a"
 
+    # tight prompt + 2 few-shot examples
     prompt = (
-        "Using only the information provided, write one short, patient-friendly sentence of guidance. "
-        "Do not add new facts. Keep it under 25 words.\n"
-        f"Interaction types: {type_line}\n"
-        f"Reason: {reason_text if reason_text else 'n/a'}\n"
+        "You are rewriting drug-interaction information into ONE short, patient-friendly suggestion.\n"
+        "Use ONLY the data provided (types/reason/context). Do not invent facts.\n"
+        "Return EXACTLY ONE sentence, under 24 words, in plain English.\n"
+        "Prefer: 'Avoid', 'Use only with', 'Monitor', 'Separate doses', 'Ask your clinician'.\n"
+        "Do not mention videos or guidelines.\n"
+        "\n"
+        "Example:\n"
+        "Types: moderate; Reason: n/a; Context: Warnings: GI bleeding, ulcer. -> Avoid taking together unless advised; risk of stomach bleeding—ask your clinician.\n"
+        "Example:\n"
+        "Types: pharmacokinetic; Reason: n/a; Context: Precautions: liver disease. -> Use only with advice; one drug can change levels—monitor and consult your clinician.\n"
+        "\n"
+        f"Types: {type_line}\n"
+        f"Reason: {reason_line}\n"
         f"Context: {ctx if ctx else 'n/a'}\n"
-        "Advice:"
+        "Suggestion:"
     )
 
     eos_id = getattr(tokenizer, "eos_token_id", None)
     inputs = tokenizer(prompt, return_tensors="pt")
     inputs = {k: v.to(model.device) for k, v in inputs.items()}
+
     with torch.inference_mode():
         outputs = model.generate(
             **inputs,
-            max_new_tokens=48,
+            max_new_tokens=42,
             do_sample=True,
-            temperature=0.7,
-            top_p=0.92,
-            repetition_penalty=1.2,
-            no_repeat_ngram_size=3,
+            temperature=0.4,
+            top_p=0.9,
+            repetition_penalty=1.3,
+            no_repeat_ngram_size=4,
             pad_token_id=eos_id,
             eos_token_id=eos_id,
         )
     txt = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    return _clean_guidance_text(txt)
-
-def guidance_sentence(reason_text: str, types, d1_info: dict, d2_info: dict) -> str:
-    g = _guidance_with_gpt2(reason_text, types, d1_info, d2_info) if (tokenizer and model) else ""
-    if len(g.split()) < 4:
-        risks = _pick_risks(reason_text, d1_info, d2_info)
-        sev = _severity_from_types(types)
-        if risks:
-            risk_text = " or ".join(risks)
-            g = f"This combination {sev} due to potential {risk_text}. Talk to your healthcare provider."
-        else:
-            g = f"This combination {sev}. Talk to your healthcare provider."
-    return g
+    return _clean_llm(txt)
 
 # ── Session state for logs (not shown on screen)
 if "chat_log" not in st.session_state:
@@ -330,7 +309,7 @@ if go:
     st.markdown(
         f"""
         <div class="conv-row">
-          <div class="conv-ico">🧑</div>
+          <div class="conv-ico">🧑‍💬</div>
           <div class="conv-card">
             <div class="conv-meta">{when} — User</div>
             {_escape_html(user_text)}
@@ -369,7 +348,7 @@ if go:
         # Drugs detected
         if drugs:
             st.markdown('<div class="section-h">Drugs detected</div>', unsafe_allow_html=True)
-            chips = " ".join([f'<span class="pill">{_escape_html(d)}</span>' for d in drugs])  # space for clarity
+            chips = " ".join([f'<span class="pill">{_escape_html(d)}</span>' for d in drugs])
             st.markdown(chips, unsafe_allow_html=True)
 
         if len(drugs) < 2:
@@ -391,13 +370,13 @@ if go:
                     st.markdown(f'<div class="pair-title">{pair_title}</div>', unsafe_allow_html=True)
 
                     if recs:
-                        # collect types and internal reasons (not shown)
+                        # collect types and combine reason internally (not shown)
                         types = sorted({(r.get("type") or "Unknown") for r in recs})
                         combined_reason = " ".join([r.get("reason","").strip() for r in recs if r.get("reason")]).strip()
 
                         st.markdown('<span class="badge badge-hit">Interaction in database</span>', unsafe_allow_html=True)
 
-                        # show types as chips (no raw reasons)
+                        # type chips + one-line definition
                         if types:
                             st.markdown(
                                 '<div class="types-line">Interaction type(s): ' +
@@ -405,6 +384,9 @@ if go:
                                 '</div>',
                                 unsafe_allow_html=True,
                             )
+                            meaning = type_definitions_line(types)
+                            if meaning:
+                                st.markdown(f'<div class="type-def">What this means: { _escape_html(meaning) }</div>', unsafe_allow_html=True)
 
                         # details
                         with st.expander(f"Details — {d1_info.get('Drug', d1)}"):
@@ -418,12 +400,16 @@ if go:
                             if d2_info.get("Warnings"): st.write("Warnings: " + ", ".join(d2_info["Warnings"]))
                             if d2_info.get("Precautions"): st.write("Precautions: " + ", ".join(d2_info["Precautions"]))
 
-                        # Bot response (hybrid: model + fallback)
-                        guidance = guidance_sentence(combined_reason, types, d1_info, d2_info)
+                        # Bot response — LLM only (fallback only if model totally unavailable)
+                        guidance = guidance_with_llm(combined_reason, types, d1_info, d2_info)
+                        if not guidance:
+                            guidance = "Unable to generate advice right now. Please consult your clinician."
+
                         st.markdown(
                             f'<div class="para-card"><div class="para-head">Bot response</div>{_escape_html(guidance)}</div>',
                             unsafe_allow_html=True,
                         )
+                        st.caption("Generated by LLM from graph data.")
                         bot_lines.append(f"{pair_title} — {guidance}")
                     else:
                         st.markdown('<span class="badge badge-ok">No known interaction found</span>', unsafe_allow_html=True)
@@ -439,7 +425,6 @@ if go:
                             if d2_info.get("Warnings"): st.write("Warnings: " + ", ".join(d2_info["Warnings"]))
                             if d2_info.get("Precautions"): st.write("Precautions: " + ", ".join(d2_info["Precautions"]))
 
-                        # Friendly line for no interaction
                         st.markdown(
                             f'<div class="para-card"><div class="para-head">Bot response</div>No interaction found for this pair.</div>',
                             unsafe_allow_html=True,
